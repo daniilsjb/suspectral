@@ -1,0 +1,31 @@
+name: Suspectral Application
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.13"
+    - name: Install dependencies
+      run: |
+        cd suspectral-app
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Compile resources
+      run: |
+        pyside6-rcc resources/resources.qrc -o resources_rc.py
+    - name: Test with pytest
+      run: |
+        pytest
