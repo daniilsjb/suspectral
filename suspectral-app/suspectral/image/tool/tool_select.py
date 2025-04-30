@@ -42,6 +42,7 @@ class SelectTool(Tool):
 
     def deactivate(self):
         self._view.context_menu_requested.disconnect(self._handle_context_menu)
+        self.selection_ended.emit()
         self._reset()
         self._view.unsetCursor()
         super().deactivate()
