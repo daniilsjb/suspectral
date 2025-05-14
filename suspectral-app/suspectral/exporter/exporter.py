@@ -4,9 +4,12 @@ import numpy as np
 
 
 class Exporter(ABC):
-    def __init__(self, name: str):
-        self.name = name
+    def __init__(self, label: str):
+        self.label = label
 
     @abstractmethod
-    def export(self, spectra: np.ndarray, wavelengths: np.ndarray | None = None):
+    def export(self,
+               name: str,
+               spectra: np.ndarray,
+               wavelengths: np.ndarray | None = None):
         ...

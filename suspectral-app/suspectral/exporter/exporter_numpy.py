@@ -9,19 +9,22 @@ class NpyExporter(Exporter):
     def __init__(self):
         super().__init__("NPy")
 
-    def export(self, spectra: np.ndarray, wavelengths: np.ndarray | None = None):
-        downloads = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DownloadLocation)
-        file_path, _ = QFileDialog.getSaveFileName(
+    def export(self, name: str, spectra: np.ndarray, wavelengths: np.ndarray | None = None):
+        downloads = QStandardPaths \
+            .writableLocation(QStandardPaths.StandardLocation.DownloadLocation)
+
+        path, _ = QFileDialog.getSaveFileName(
             QApplication.activeWindow(),
             caption="Save File",
             filter="NumPy Array (*.npy)",
-            dir=f"{downloads}/Spectra.npy"
+            dir=f"{downloads}/{name}.npy"
         )
 
-        if file_path:
-            data = spectra
-            if wavelengths is not None:
-                data = np.vstack((wavelengths, data))
+        if not path: return
 
-            with open(file_path, "wb") as file:
-                np.save(file, data)
+        if wavelengths is not None:
+            data = np.vstack((wavelengths, spectra))
+        else:
+            data = spectra
+
+        np.save(path, data)

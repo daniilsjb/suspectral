@@ -5,9 +5,5 @@ from PySide6.QtWidgets import QApplication
 
 class ThemePixmap(QPixmap):
     def __init__(self, name):
-        if Qt.ColorScheme.Dark == QApplication.styleHints().colorScheme():
-            theme = "dark"
-        else:
-            theme = "light"
-
+        theme = "dark" if Qt.ColorScheme.Dark == QApplication.styleHints().colorScheme() else "light"
         super().__init__(f":/icons/{theme}/{name}")

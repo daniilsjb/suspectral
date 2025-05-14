@@ -17,7 +17,7 @@ class AboutDialog(QDialog):
         self.resize(300, 200)
 
         pixmap = QPixmap(":/icons/suspectral.png") \
-            .scaled(64, 64, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            .scaled(50, 50, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
 
         logo = QLabel(self)
         logo.setPixmap(pixmap)

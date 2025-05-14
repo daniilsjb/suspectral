@@ -29,7 +29,7 @@ jobs:
         pip install -r requirements.txt
     - name: Compile resources
       run: |
-        pyside6-rcc resources/resources.qrc -o resources_rc.py
+        pyside6-rcc resources/resources.qrc -o resources.py
     - name: Test with pytest
       run: |
         pytest

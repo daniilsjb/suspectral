@@ -10,17 +10,19 @@ class MatlabExporter(Exporter):
     def __init__(self):
         super().__init__("MATLAB")
 
-    def export(self, spectra: np.ndarray, wavelengths: np.ndarray | None = None):
-        downloads = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DownloadLocation)
-        file_path, _ = QFileDialog.getSaveFileName(
+    def export(self, name: str, spectra: np.ndarray, wavelengths: np.ndarray | None = None):
+        downloads = QStandardPaths \
+            .writableLocation(QStandardPaths.StandardLocation.DownloadLocation)
+
+        path, _ = QFileDialog.getSaveFileName(
             QApplication.activeWindow(),
             caption="Save File",
             filter="MATLAB (*.mat)",
-            dir=f"{downloads}/Spectra.mat",
+            dir=f"{downloads}/{name}.mat",
         )
 
-        if file_path:
-            savemat(file_path, {
-                "wavelengths": wavelengths,
-                "spectra": spectra,
-            })
+        if not path: return
+        savemat(path, {
+            "wavelengths": wavelengths,
+            "spectra": spectra,
+        })

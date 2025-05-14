@@ -1,0 +1,38 @@
+{
+  "train": [
+    "watercolors_ms",
+    "pompoms_ms",
+    "photo_and_face_ms",
+    "sponges_ms",
+    "fake_and_real_tomatoes_ms",
+    "fake_and_real_peppers_ms",
+    "cd_ms",
+    "egyptian_statue_ms",
+    "glass_tiles_ms",
+    "fake_and_real_food_ms",
+    "oil_painting_ms",
+    "real_and_fake_apples_ms",
+    "flowers_ms",
+    "jelly_beans_ms",
+    "thread_spools_ms",
+    "hairs_ms",
+    "paints_ms",
+    "fake_and_real_strawberries_ms",
+    "fake_and_real_sushi_ms",
+    "clay_ms",
+    "superballs_ms",
+    "beads_ms",
+    "real_and_fake_peppers_ms",
+    "fake_and_real_beers_ms",
+    "fake_and_real_lemons_ms",
+    "fake_and_real_lemon_slices_ms",
+    "cloth_ms",
+    "face_ms",
+    "stuffed_toys_ms",
+    "feathers_ms"
+  ],
+  "test": [
+    "balloons_ms",
+    "chart_and_stuffed_toy_ms"
+  ]
+}
