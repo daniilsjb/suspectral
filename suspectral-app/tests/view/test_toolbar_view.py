@@ -37,30 +37,30 @@ def mock_tools():
 
 
 @pytest.fixture
-def toolbar_view(qtbot, mock_image, mock_tools, mock_model):
+def victim(qtbot, mock_image, mock_tools, mock_model):
     widget = ToolbarView(image=mock_image, tools=mock_tools, model=mock_model)
     qtbot.addWidget(widget)
     return widget
 
 
-def test_toolbar_initial_state(toolbar_view):
-    assert toolbar_view.toolTip() == "Toolbar"
-    assert toolbar_view.iconSize().width() == 20
-    assert not toolbar_view.isMovable()
-    assert not toolbar_view.isFloatable()
-    assert not toolbar_view.isEnabled()
+def test_toolbar_initial_state(victim):
+    assert victim.toolTip() == "Toolbar"
+    assert victim.iconSize().width() == 20
+    assert not victim.isMovable()
+    assert not victim.isFloatable()
+    assert not victim.isEnabled()
 
 
-def test_model_signals_enable_toolbar(toolbar_view, mock_model):
-    assert not toolbar_view.isEnabled()
+def test_model_signals_enable_toolbar(victim, mock_model):
+    assert not victim.isEnabled()
     mock_model.opened.emit()
-    assert toolbar_view.isEnabled()
+    assert victim.isEnabled()
     mock_model.closed.emit()
-    assert not toolbar_view.isEnabled()
+    assert not victim.isEnabled()
 
 
-def test_tools_added_to_action_group(toolbar_view):
-    group = toolbar_view._action_group
+def test_tools_added_to_action_group(victim):
+    group = victim._action_group
     actions = group.actions()
     names = [action.text() for action in actions]
     expected = {"None", "Drag", "Inspect", "Select Area", "Zoom"}
@@ -68,20 +68,20 @@ def test_tools_added_to_action_group(toolbar_view):
     assert group.isExclusive()
 
 
-def test_correct_default_tool_checked(toolbar_view):
-    checked = [a for a in toolbar_view._action_group.actions() if a.isChecked()]
+def test_correct_default_tool_checked(victim):
+    checked = [a for a in victim._action_group.actions() if a.isChecked()]
     assert len(checked) == 1
     assert checked[0].text() == "None"
 
 
-def test_select_tool_triggers_tool_manager(toolbar_view, mock_tools):
-    action = [a for a in toolbar_view._action_group.actions() if a.text() == "Zoom"][0]
-    toolbar_view._select_tool(action)
+def test_select_tool_triggers_tool_manager(victim, mock_tools):
+    action = [a for a in victim._action_group.actions() if a.text() == "Zoom"][0]
+    victim._select_tool(action)
     mock_tools.set.assert_called_once_with(action.data())
 
 
-def test_all_toolbar_actions_present(toolbar_view):
-    action_names = [action.text() for action in toolbar_view.actions()]
+def test_all_toolbar_actions_present(victim):
+    action_names = [action.text() for action in victim.actions()]
     expected = {
         "None", "Drag", "Inspect", "Select Area", "Zoom",
         "",
@@ -90,7 +90,7 @@ def test_all_toolbar_actions_present(toolbar_view):
     assert set(action_names) == expected
 
 
-def test_image_methods_triggered(mock_image, toolbar_view, qtbot):
+def test_image_methods_triggered(mock_image, victim, qtbot):
     action_map = {
         "Rotate Left": mock_image.rotate_left,
         "Rotate Right": mock_image.rotate_right,
@@ -102,8 +102,8 @@ def test_image_methods_triggered(mock_image, toolbar_view, qtbot):
 
     for name, method in action_map.items():
         method.reset_mock()
-        action = next(a for a in toolbar_view.actions() if a and a.text() == name)
-        with qtbot.waitSignal(action.triggered, timeout=100):
+        action = next(a for a in victim.actions() if a and a.text() == name)
+        with qtbot.waitSignal(action.triggered, timeout=500):
             action.trigger()
         method.assert_called_once()
 

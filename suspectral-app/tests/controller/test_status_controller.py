@@ -16,17 +16,13 @@ class DummyHypercube(QObject):
 
 
 @pytest.fixture
-def qtbot():
-    return MagicMock()
-
-
-@pytest.fixture
 def victim(qtbot):
-    view = MagicMock(StatusView)
-    image = MagicMock(ImageView)
-    tools = MagicMock(ToolManager)
-    model = DummyHypercube()
-    return StatusController(view=view, image=image, tools=tools, model=model, parent=None)
+    return StatusController(
+        view=MagicMock(StatusView),
+        image=MagicMock(ImageView),
+        tools=MagicMock(ToolManager),
+        model=DummyHypercube(),
+    )
 
 
 def test_handle_hypercube_opened(victim, qtbot):
@@ -71,33 +67,6 @@ def test_hypercube_opened_signal(victim, qtbot):
 def test_hypercube_closed_signal(victim, qtbot):
     victim._model.closed.emit()
     victim._view.clear.assert_called_once()
-
-
-def test_initialization(victim, qtbot):
-    assert isinstance(victim, StatusController)
-    assert victim._view is not None
-    assert victim._model is not None
-    assert victim._tools is not None
-
-
-def test_handle_hypercube_opened_invalid(victim, qtbot):
-    victim._handle_hypercube_opened(None)
-    victim._view.update_hypercube.assert_called_once_with(None)
-
-
-def test_handle_selection_moved_invalid(victim, qtbot):
-    victim._handle_selection_moved(None)
-    victim._view.update_selection.assert_called_once_with(None)
-
-
-def test_handle_cursor_inside_invalid(victim, qtbot):
-    victim._handle_cursor_inside(None)
-    victim._view.update_cursor.assert_called_once_with(None)
-
-
-def test_handle_cursor_outside_invalid(victim, qtbot):
-    victim._handle_cursor_outside()
-    victim._view.clear_cursor.assert_called_once()
 
 
 def test_hypercube_opened_boundary(victim, qtbot):

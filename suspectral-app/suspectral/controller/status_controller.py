@@ -36,6 +36,7 @@ class StatusController(QObject):
     def _handle_hypercube_closed(self):
         self._view.clear()
 
+    @Slot()
     def _handle_selection_moved(self, selection: QRect):
         self._view.update_selection(selection)
 

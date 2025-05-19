@@ -24,7 +24,7 @@ def container():
     mock = create_autospec(HypercubeContainer)
     mock.hypercube.name = "cube"
     mock.hypercube.read_pixels.return_value = [[1, 2, 3]]
-    mock.hypercube.wavelengths = [400, 500, 600]
+    mock.hypercube.bands = [400, 500, 600]
     return mock
 
 
@@ -114,6 +114,7 @@ def test_inspect_outside_clears_points_and_emits_clear(qtbot, victim):
 
     event = QMouseEvent(
         QEvent.Type.MouseButtonRelease,
+        QPointF(-1, -1),
         QPointF(-1, -1),
         Qt.MouseButton.LeftButton,
         Qt.MouseButton.LeftButton,

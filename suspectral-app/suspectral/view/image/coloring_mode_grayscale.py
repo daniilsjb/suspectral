@@ -92,4 +92,3 @@ class ColoringModeGrayscale(ColoringMode):
             self._channel.reset(minimum, maximum, self._wavelengths[self._band], suffix)
         else:
             self._channel.reset(0, self._num_bands - 1, self._band)
-

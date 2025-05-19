@@ -1,10 +1,10 @@
 import pytest
 from PySide6.QtCore import QEvent, Qt, QObject
 
-import resources
 from suspectral.tool.tool_zoom import ZoomTool
 from suspectral.view.image.image_view import ImageView
 
+import resources
 assert resources
 
 
@@ -23,34 +23,34 @@ def mock_image_view(mocker):
 
 
 @pytest.fixture
-def zoom_tool(mock_image_view):
+def victim(mock_image_view):
     return ZoomTool(view=mock_image_view)
 
 
-def test_event_filter_enter_sets_cursor(qtbot, zoom_tool, mock_image_view):
+def test_event_filter_enter_sets_cursor(qtbot, victim, mock_image_view):
     event = DummyEvent(QEvent.Type.Enter)
-    result = zoom_tool.eventFilter(QObject(), event)
-    mock_image_view.setCursor.assert_called_once_with(zoom_tool._cursor)
+    result = victim.eventFilter(QObject(), event)
+    mock_image_view.setCursor.assert_called_once_with(victim._cursor)
     assert result is False
 
 
-def test_event_filter_leave_unsets_cursor(qtbot, zoom_tool, mock_image_view):
+def test_event_filter_leave_unsets_cursor(qtbot, victim, mock_image_view):
     event = DummyEvent(QEvent.Type.Leave)
-    result = zoom_tool.eventFilter(QObject(), event)
+    result = victim.eventFilter(QObject(), event)
     mock_image_view.unsetCursor.assert_called_once()
     assert result is False
 
 
-def test_event_filter_context_menu_filtered_out(qtbot, zoom_tool):
+def test_event_filter_context_menu_filtered_out(qtbot, victim):
     event = DummyEvent(QEvent.Type.ContextMenu)
-    result = zoom_tool.eventFilter(QObject(), event)
+    result = victim.eventFilter(QObject(), event)
     assert result is True
 
 
 @pytest.mark.parametrize("button,expected_zoom", [
     (Qt.MouseButton.LeftButton, "zoom_in"),
     (Qt.MouseButton.RightButton, "zoom_out"),
-    (Qt.MouseButton.MiddleButton, None),  # No zoom should happen
+    (Qt.MouseButton.MiddleButton, None),
 ])
 def test_mouse_release_handling_integration(qtbot, mocker, button, expected_zoom):
     image_view = ImageView()
@@ -78,16 +78,16 @@ def test_mouse_release_handling_integration(qtbot, mocker, button, expected_zoom
         zoom_out.assert_not_called()
 
 
-def test_deactivate_calls_unset_cursor_and_super(qtbot, zoom_tool, mock_image_view, mocker):
+def test_deactivate_calls_unset_cursor_and_super(qtbot, victim, mock_image_view, mocker):
     super_deactivate = mocker.patch("suspectral.tool.tool_zoom.Tool.deactivate")
-    zoom_tool.deactivate()
+    victim.deactivate()
     mock_image_view.unsetCursor.assert_called_once()
     super_deactivate.assert_called_once()
 
 
-def test_event_filter_falls_back_to_super_for_other_events(qtbot, zoom_tool, mock_image_view, mocker):
+def test_event_filter_falls_back_to_super_for_other_events(qtbot, victim, mock_image_view, mocker):
     unknown_event = DummyEvent(QEvent.Type.KeyPress)
     super_filter = mocker.patch("suspectral.tool.tool_zoom.Tool.eventFilter", return_value=True)
-    result = zoom_tool.eventFilter(QObject(), unknown_event)
+    result = victim.eventFilter(QObject(), unknown_event)
     super_filter.assert_called_once()
     assert result is True

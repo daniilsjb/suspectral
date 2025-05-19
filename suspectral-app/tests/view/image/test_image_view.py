@@ -1,9 +1,8 @@
 from unittest.mock import patch
 
 import pytest
-from PySide6.QtCore import QPoint, QRectF, QEvent
-from PySide6.QtGui import QPixmap, QMouseEvent, QWheelEvent, QContextMenuEvent, Qt
-from PySide6.QtWidgets import QMenu
+from PySide6.QtCore import QPoint, QRectF
+from PySide6.QtGui import QPixmap, QWheelEvent, Qt
 
 from suspectral.view.image.image_view import ImageView
 

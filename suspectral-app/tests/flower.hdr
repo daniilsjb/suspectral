@@ -1,0 +1,11 @@
+ENVI
+samples = 341
+lines = 256
+bands = 31
+header offset = 0
+file type = ENVI Standard
+data type = 5
+interleave = bip
+byte order = 0
+wavelength = { 400 , 410 , 420 , 430 , 440 , 450 , 460 , 470 , 480 , 490 , 500 , 510 , 520 , 530 , 540 , 550 , 560 , 570 , 580 , 590 , 600 , 610 , 620 , 630 , 640 , 650 , 660 , 670 , 680 , 690 , 700 }
+wavelength unit = nm

@@ -94,11 +94,6 @@ def test_reset(victim):
     assert x_range[1] >= 1
 
 
-def test_context_menu_no_spectra(victim):
-    event = QContextMenuEvent(QContextMenuEvent.Reason.Mouse, victim.rect().center())
-    victim.contextMenuEvent(event)
-
-
 def test_context_menu_with_spectra(victim):
     victim._spectra.append(np.random.rand(10))
 

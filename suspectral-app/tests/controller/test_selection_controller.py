@@ -11,11 +11,6 @@ from suspectral.view.selection_view import SelectionView
 
 
 @pytest.fixture
-def qtbot():
-    return MagicMock()
-
-
-@pytest.fixture
 def victim(qtbot):
     view = MagicMock(spec=SelectionView)
     model = MagicMock(spec=HypercubeContainer)

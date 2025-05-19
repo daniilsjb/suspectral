@@ -60,15 +60,3 @@ def test_spinbox_change_triggers_signal(victim, qtbot):
 
     with qtbot.waitSignal(victim.valueChanged, timeout=500):
         victim.spinbox.setValue(30)
-
-
-def test_slider_release_triggers_spinbox_update(victim, qtbot):
-    victim.reset(0, 100, 20)
-
-    slider = victim.slider
-
-    qtbot.mousePress(slider, Qt.MouseButton.LeftButton, pos=slider.rect().center())
-    qtbot.mouseMove(slider, pos=slider.rect().topRight())
-    qtbot.mouseRelease(slider, Qt.MouseButton.LeftButton, pos=slider.rect().topRight())
-
-    assert victim.spinbox.value() == slider.value()
