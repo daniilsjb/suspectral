@@ -1,55 +1,74 @@
 import numpy as np
 
 
-class RegressionLS:
-    def __init__(self, n_features, n_channels):
-        self._n_features = n_features
-        self._n_channels = n_channels
+class OLS:
+    """
+    Based on the following publication:
 
-        self._XX = np.zeros((self._n_features, self._n_features))
-        self._XY = np.zeros((self._n_features, self._n_channels))
+    Lin, Y.-T. and Finlayson, G.D. (2021) “On the optimization of regression-
+    based spectral reconstruction,” Sensors, 21(16), p. 5586.
+    """
 
-        self._M = np.zeros((self._n_features, self._n_channels))
+    def __init__(self, n_features: int, n_bands: int):
+        self.n_features_ = n_features
+        self.n_bands_ = n_bands
+
+        self._XX = np.zeros((self.n_features_, self.n_features_))
+        self._XY = np.zeros((self.n_features_, self.n_bands_))
+
+        self._M = np.zeros((self.n_features_, self.n_bands_))
         self.alpha_ = 0.0
 
-    def update(self, X, y):
+    def add(self, X: np.ndarray, y: np.ndarray):
         self._XX += X.T @ X
         self._XY += X.T @ y
 
-    def build(self, *, alpha=0.0):
-        self._M = np.linalg.inv(self._XX + alpha * np.eye(self._n_features)) @ self._XY
+    def fit(self, *, alpha: float = 0.0):
+        self._M = np.linalg.inv(self._XX + alpha * np.eye(self.n_features_)) @ self._XY
         self.alpha_ = alpha
 
-    def predict(self, X):
+    def predict(self, X: np.ndarray) -> np.ndarray:
         return X @ self._M
 
 
-class RegressionRELS:
-    def __init__(self, n_features, n_channels):
+class RELS:
+    """
+    Based on the following publication:
+
+    Lin, Y.-T. and Finlayson, G.D. (2021) “On the optimization of regression-
+    based spectral reconstruction,” Sensors, 21(16), p. 5586.
+    """
+
+    def __init__(self, n_features: int, n_bands: int, epsilon: float = 1e-3):
         self.n_features_ = n_features
-        self.n_channels_ = n_channels
+        self.n_bands_ = n_bands
+        self.epsilon_ = epsilon
 
-        self._XX = [np.zeros((n_features, n_features)) for _ in range(n_channels)]
-        self._XY = np.zeros((n_features, n_channels))
+        self._HH = np.zeros((n_bands, n_features, n_features))
+        self._H1 = np.zeros((n_features, n_bands))
 
-        self._M = np.zeros((n_features, n_channels))
-        self.alphas_ = np.zeros(n_channels)
+        self._M = np.zeros((n_features, n_bands))
+        self.alphas_ = np.zeros(n_bands)
 
-    def build_channel(self, *, channel: int, alpha: float):
-        self._M[:, channel] = np.linalg.inv(self._XX[channel] + alpha * np.eye(self.n_features_)) @ self._XY[:, channel]
-        self.alphas_[channel] = alpha
+    def add(self, X: np.ndarray, y: np.ndarray):
+        for band in range(self.n_bands_):
+            H = 1.0 / (y[:, band].reshape(len(X), 1) + self.epsilon_) * X
+            k = y[:, band] / (y[:, band] + self.epsilon_)
 
-    def update(self, X, y):
-        n = X.shape[0]
+            self._HH[band, ...] += H.T @ H
+            self._H1[..., band] += H.T @ k
 
-        for channel in range(self.n_channels_):
-            H = 1.0 / y[:, channel].reshape(n, 1) * X
+        return self
 
-            self._XX[channel] += H.T @ H
-            self._XY[:, channel] += H.T @ np.ones(n)
+    def fit(self, *, alphas: list[float]):
+        self.alphas_ = np.array(alphas.copy())
 
-    def transform(self, X):
+        for band, alpha in enumerate(alphas):
+            penalty = alpha * np.eye(self.n_features_)
+            inverse = np.linalg.inv(self._HH[band] + penalty)
+            self._M[:, band] = inverse @ self._H1[:, band]
+
+        return self
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
         return X @ self._M
-
-    def transform_channel(self, X, *, channel: int):
-        return X @ self._M[:, channel].reshape(-1, 1)

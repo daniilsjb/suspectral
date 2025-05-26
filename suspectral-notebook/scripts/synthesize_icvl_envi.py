@@ -10,15 +10,14 @@ import scipy.interpolate as interpolate
 
 from tqdm import tqdm
 
-parent = Path('.').parent
-
 
 def main():
     wavelengths = np.arange(400, 1000 + 1, 5)
     wavelengths_mask = wavelengths <= 700
     wavelengths = wavelengths[wavelengths_mask]
 
-    srf_df = pd.read_csv(parent / 'resources' / 'Sony_IMX219.csv')
+    root = Path(__file__).parent.parent
+    srf_df = pd.read_csv(root / 'resources' / 'sensitivities' / 'Sony_IMX219.csv')
     srf_w = srf_df['Wavelength'].values
     srf_r = interpolate.CubicSpline(srf_w, srf_df['R'].values)(wavelengths)
     srf_g = interpolate.CubicSpline(srf_w, srf_df['G'].values)(wavelengths)
@@ -29,7 +28,7 @@ def main():
     srf_g /= integrate.simpson(srf_g, wavelengths)
     srf_b /= integrate.simpson(srf_b, wavelengths)
 
-    paths = (parent / 'datasets' / 'ICVL-ENVI').iterdir()
+    paths = (root / 'datasets' / 'ICVL-ENVI').iterdir()
     paths = [p for p in paths if p.suffix == '.hdr']
 
     for path in tqdm(paths):

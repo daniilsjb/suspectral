@@ -3,16 +3,16 @@ import argparse
 from pathlib import Path
 
 import h5py
+import imageio.v3 as iio
 import numpy as np
 import scipy.io as sio
-import imageio.v3 as iio
-from spectral import envi
+import spectral as spy
 
-parent = Path('.').parent
+root = Path(__file__).parent.parent
 
 
 def extract_icvl(name: str):
-    with h5py.File(parent / 'datasets' / 'ICVL' / f'{name}.mat', 'r') as file:
+    with h5py.File(root / 'datasets' / 'ICVL' / f'{name}.mat', 'r') as file:
         hypercube = np.array(file['rad']).swapaxes(0, 2)
         wavelengths = np.squeeze(file['bands'])
 
@@ -20,7 +20,7 @@ def extract_icvl(name: str):
 
 
 def extract_cave(name: str):
-    with os.scandir(parent / 'datasets' / 'CAVE' / name) as files:
+    with os.scandir(root / 'datasets' / 'CAVE' / name) as files:
         bands = list(iio.imread(f.path) for f in files if f.name.endswith('.png'))
 
     hypercube = np.dstack(bands) / np.iinfo(np.uint16).max
@@ -29,7 +29,7 @@ def extract_cave(name: str):
 
 
 def extract_kaust(name: str):
-    with h5py.File(parent / 'datasets' / 'KAUST' / f'{name}.h5', 'r') as file:
+    with h5py.File(root / 'datasets' / 'KAUST' / f'{name}.h5', 'r') as file:
         hypercube = np.array(file['img\\']).swapaxes(0, 2)
         wavelengths = np.arange(400, 730 + 1, 10)
 
@@ -37,7 +37,7 @@ def extract_kaust(name: str):
 
 
 def extract_harvard(name: str):
-    hypercube = sio.loadmat(str(parent / 'datasets' / 'Harvard' / f'{name}.mat'))['ref']
+    hypercube = sio.loadmat(str(root / 'datasets' / 'Harvard' / f'{name}.mat'))['ref']
     wavelengths = np.arange(420, 720 + 1, 10)
     return hypercube, wavelengths
 
@@ -83,7 +83,7 @@ def main():
     }
 
     hdr = Path(args.destination) / f'{args.name}.hdr'
-    envi.save_image(hdr, hypercube, ext='raw', metadata=metadata, force=True)
+    spy.envi.save_image(hdr, hypercube, ext='raw', metadata=metadata, force=True)
 
 
 if __name__ == '__main__':
