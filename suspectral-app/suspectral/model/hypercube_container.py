@@ -20,6 +20,7 @@ class HypercubeContainer(QObject):
         return self._hypercube
 
     def close(self):
+        del self._hypercube
         self._hypercube = None
         self.closed.emit()
 

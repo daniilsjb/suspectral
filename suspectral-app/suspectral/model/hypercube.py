@@ -3,15 +3,25 @@ from pathlib import Path
 import numpy as np
 from spectral import get_rgb
 from spectral.io import envi
+from spectral.io.envi import (
+    FileNotAnEnviHeader,
+    EnviHeaderParsingError,
+    MissingEnviHeaderParameter,
+    EnviDataFileNotFoundError,
+)
 
 
 class Hypercube:
     def __init__(self, path: str):
+        try:
+            self._envi = envi.open(path)
+            self._metadata = self._envi.metadata
+        except EnviDataFileNotFoundError as e:
+            raise HypercubeDataMissing(e)
+        except (FileNotAnEnviHeader, EnviHeaderParsingError, MissingEnviHeaderParameter) as e:
+            raise HypercubeHeaderInvalid(e)
+
         self._name = Path(path).stem
-
-        self._envi = envi.open(path)
-        self._metadata = self._envi.metadata
-
         self._wavelengths: np.ndarray | None = None
         self._wavelengths_unit: str | None = None
 
@@ -91,3 +101,13 @@ class Hypercube:
 
     def read_subimage(self, rows, cols, bands=None) -> np.ndarray:
         return self._envi.read_subimage(rows, cols, bands)
+
+
+class HypercubeDataMissing(Exception):
+    """Raised upon attempting to open a hypercube with a missing data file."""
+    pass
+
+
+class HypercubeHeaderInvalid(Exception):
+    """Raised upon attempting to open a hypercube with a malformed header file."""
+    pass

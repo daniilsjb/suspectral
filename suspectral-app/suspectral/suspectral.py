@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
     QDockWidget,
     QFileDialog,
     QMainWindow,
-    QWidget,
+    QWidget, QMessageBox,
 )
 
 from suspectral.about import AboutDialog
@@ -27,7 +27,7 @@ from suspectral.exporter.exporter_matlab import MatlabExporter
 from suspectral.exporter.exporter_numpy import NpyExporter
 from suspectral.help import HelpDialog
 from suspectral.license import LicenseDialog
-from suspectral.model.hypercube import Hypercube
+from suspectral.model.hypercube import Hypercube, HypercubeDataMissing, HypercubeHeaderInvalid
 from suspectral.model.hypercube_container import HypercubeContainer
 from suspectral.tool.manager import ToolManager
 from suspectral.tool.tool import Tool
@@ -297,7 +297,7 @@ class Suspectral(QMainWindow):
         )
 
         if path:
-            self._model.open(path)
+            self._load_hypercube(path)
 
     @Slot()
     def _handle_close(self):
@@ -326,4 +326,23 @@ class Suspectral(QMainWindow):
     def _handle_drop(self, event: QDropEvent):
         if event.mimeData().hasUrls():
             path = event.mimeData().urls()[0].toLocalFile()
+            self._load_hypercube(path)
+
+    def _load_hypercube(self, path: str):
+        try:
             self._model.open(path)
+        except HypercubeDataMissing:
+            QMessageBox.critical(
+                self,
+                "Missing Data",
+                "The data file associated with the selected header does not exist. "
+                "Please, ensure that it is located in the same directory as the header "
+                "and has either .raw, .img., or .dat extension."
+            )
+        except HypercubeHeaderInvalid:
+            QMessageBox.critical(
+                self,
+                "Invalid Header",
+                "The selected header does not follow the standard ENVI format. Please, "
+                "ensure that the contents  of the header file contain all necessary fields."
+            )
