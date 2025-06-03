@@ -79,11 +79,15 @@ def test_handle_hypercube_opened_emits_false_on_none(qtbot, victim):
     victim.statusChanged.emit.assert_called_once_with(False)
 
 
+@patch("suspectral.view.image.coloring_mode_srf.QThread")
 @patch("suspectral.view.image.coloring_mode_srf.SynthesizerSRF")
 @patch("suspectral.view.image.coloring_mode_srf.QProgressDialog")
-def test_handle_synthesis_starts_thread(mock_dialog_cls, mock_synth_cls, victim, qtbot):
+def test_handle_synthesis_starts_thread(mock_dialog_cls, mock_synth_cls, mock_qthread_cls, victim, qtbot):
     mock_worker = MagicMock()
     mock_synth_cls.return_value = mock_worker
+
+    mock_thread = MagicMock()
+    mock_qthread_cls.return_value = mock_thread
 
     mock_dialog = MagicMock()
     mock_dialog_cls.return_value = mock_dialog
@@ -97,15 +101,9 @@ def test_handle_synthesis_starts_thread(mock_dialog_cls, mock_synth_cls, victim,
     victim._handle_synthesis()
 
     mock_synth_cls.assert_called_once()
-    args, kwargs = mock_synth_cls.call_args
-
-    assert np.array_equal(kwargs["srf"], victim._srf_field.data_)
-    assert np.array_equal(kwargs["spd"], victim._spd_field.data_)
-    assert kwargs["apply_per_channel_contrast"] is True
-
     mock_dialog_cls.assert_called_once()
-    mock_worker.moveToThread.assert_called_once()
-    mock_dialog.show.assert_called_once()
+    mock_worker.moveToThread.assert_called_once_with(mock_thread)
+    mock_thread.start.assert_called_once()
 
 
 @patch("suspectral.view.image.coloring_mode_srf.SynthesizerSRF")

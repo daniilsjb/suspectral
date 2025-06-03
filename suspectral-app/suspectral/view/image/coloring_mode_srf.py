@@ -175,7 +175,7 @@ class ColoringModeSRF(ColoringMode):
             apply_per_channel_contrast=self._contrast_checkbox.isChecked(),
         )
 
-        self._thread = QThread()
+        self._thread = QThread(self)
         self._thread.started.connect(self._worker.run)
         self._thread.finished.connect(self._thread.deleteLater)
 
