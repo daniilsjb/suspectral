@@ -89,9 +89,6 @@ class ImageController(QObject):
 
     @Slot()
     def _handle_image_changed(self, data: np.ndarray):
-        import hashlib
-        print(hashlib.md5(np.ascontiguousarray(data).tobytes()).hexdigest())
-
         height, width, channels = data.shape
         image_bytes = np.ascontiguousarray((data * 255).astype(np.uint8)).tobytes()
         image = QImage(image_bytes, width, height, channels * width, QImage.Format.Format_RGB888)
