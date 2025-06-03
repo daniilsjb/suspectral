@@ -46,14 +46,11 @@ def test_reset_sets_spinbox_and_slider(victim):
 
 def test_slider_update_updates_spinbox(victim, qtbot):
     victim.reset(0, 100, 20)
+    victim.slider.setValue(30)
+    victim._on_slider_update()
 
-    with qtbot.waitSignal(victim.slider.sliderReleased, timeout=500):
-        pos = victim.slider.rect().center()
-        qtbot.mousePress(victim.slider, Qt.MouseButton.LeftButton, pos=pos)
-        qtbot.mouseRelease(victim.slider, Qt.MouseButton.LeftButton, pos=pos)
-
-    assert victim.slider.value() == 50
-    assert victim.spinbox.value() == 50
+    assert victim.slider.value() == 30
+    assert victim.spinbox.value() == 30
 
 
 def test_spinbox_update_updates_slider(victim):

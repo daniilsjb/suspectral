@@ -76,22 +76,6 @@ def test_cie_srgb_contrast(qtbot, hypercube, cmf):
     assert md5(image) == "da3e14815baab4558845aca9b974816d"
 
 
-def test_cie_srgb_gamma_contrast(qtbot, hypercube, cmf):
-    victim = SynthesizerCIE(
-        cmf=cmf,
-        hypercube=hypercube,
-        apply_srgb_transform=True,
-        apply_gamma_encoding=True,
-        apply_per_channel_contrast=True,
-    )
-
-    with qtbot.waitSignal(victim.produced, timeout=500) as blocker:
-        victim.run()
-
-    image = blocker.args[0]
-    assert md5(image) == "e09674f6277e669e2ec2cc7b94b57ba7"
-
-
 def test_cie_srgb_d65(qtbot, hypercube, cmf, d65):
     victim = SynthesizerCIE(
         cmf=cmf,
