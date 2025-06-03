@@ -1,17 +1,44 @@
 from typing import cast
 
-from PySide6.QtCore import QEvent, Qt, Signal, QPoint, QRectF, QObject, Slot
-from PySide6.QtGui import QMouseEvent, QPen, QColor, QAction
-from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItemGroup, QGraphicsEllipseItem, QMenu
+from PySide6.QtCore import QEvent, Qt, Signal, QPoint, QObject, Slot
+from PySide6.QtGui import QMouseEvent, QAction
+from PySide6.QtWidgets import QMenu
 
 from suspectral.colors import get_color
 from suspectral.exporter.exporter import Exporter
 from suspectral.model.hypercube_container import HypercubeContainer
-from suspectral.view.image.image_view import ImageView
+from suspectral.tool.highlight_pixel import PixelHighlight
+from suspectral.tool.highlight_point import PointHighlight
 from suspectral.tool.tool import Tool
+from suspectral.view.image.image_view import ImageView
 
 
 class InspectTool(Tool):
+    """
+    Tool for inspecting individual pixels in an image view.
+
+    This tool allows users to click on pixels to select them, optionally selecting
+    multiple pixels with the Control key. It provides visual feedback such as a
+    crosshair overlay and pixel highlight. Selected spectra can be exported using
+    a context menu with registered exporters.
+
+    Signals
+    -------
+    pixelClicked : QPoint
+        Emitted when a new pixel is selected by the user.
+    pixelCleared : None
+        Emitted when the current selection is cleared.
+
+    Parameters
+    ----------
+    view : ImageView
+        The image view widget where interaction occurs.
+    container : HypercubeContainer
+        The hypercube model containing spectral data.
+    exporters : list[Exporter]
+        Exporters instances available for exporting selected pixel spectra.
+    """
+
     pixelClicked = Signal(QPoint)
     pixelCleared = Signal()
 
@@ -21,7 +48,7 @@ class InspectTool(Tool):
         self._exporters = exporters
 
         self._points: list[QPoint] = []
-        self._crosshair: list[InspectPoint] = []
+        self._crosshair: list[PointHighlight] = []
         self._highlight = None
 
     def activate(self):
@@ -117,7 +144,7 @@ class InspectTool(Tool):
 
     def _update_highlight(self, point):
         if self._highlight is None:
-            self._highlight = InspectHighlight()
+            self._highlight = PixelHighlight()
             self._view.scene().addItem(self._highlight)
 
         self._highlight.setRect(
@@ -130,7 +157,7 @@ class InspectTool(Tool):
             self._highlight = None
 
     def _append_crosshair(self, point, color):
-        crosshair = InspectPoint(self._view, point, color)
+        crosshair = PointHighlight(self._view, point, color)
         self._crosshair.append(crosshair)
         self._view.scene().addItem(crosshair)
 
@@ -139,41 +166,3 @@ class InspectTool(Tool):
             self._view.scene().removeItem(item)
 
         self._crosshair.clear()
-
-
-class InspectHighlight(QGraphicsRectItem):
-    def __init__(self):
-        super().__init__()
-        pen = QPen(QColor(255, 255, 255, 200))
-        pen.setWidth(3)
-        pen.setCosmetic(True)
-        self.setPen(pen)
-
-
-class InspectPoint(QGraphicsItemGroup):
-    def __init__(self, view, point: QPoint, color: QColor):
-        super().__init__()
-
-        pen = QPen(color)
-        pen.setWidth(3)
-        pen.setCosmetic(True)
-
-        rect = QRectF(point.x(), point.y(), 1, 1)
-        scene_rect = view.image.mapRectToScene(rect)
-
-        circle_radius = 10
-        circle_rect = QRectF(
-            point.x() - circle_radius / 2 + 0.5,
-            point.y() - circle_radius / 2 + 0.5,
-            circle_radius,
-            circle_radius,
-        )
-
-        crosshair_r = QGraphicsRectItem(scene_rect)
-        crosshair_c = QGraphicsEllipseItem(circle_rect)
-
-        crosshair_r.setPen(pen)
-        crosshair_c.setPen(pen)
-
-        self.addToGroup(crosshair_r)
-        self.addToGroup(crosshair_c)

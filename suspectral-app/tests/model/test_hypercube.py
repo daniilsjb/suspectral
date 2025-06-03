@@ -1,8 +1,11 @@
-import pytest
-import numpy as np
 from unittest.mock import MagicMock, patch
 
-from suspectral.model.hypercube import Hypercube
+import numpy as np
+import pytest
+from spectral.io.envi import EnviDataFileNotFoundError, FileNotAnEnviHeader, EnviHeaderParsingError, \
+    MissingEnviHeaderParameter
+
+from suspectral.model.hypercube import Hypercube, HypercubeDataMissing, HypercubeHeaderInvalid
 
 
 @pytest.fixture
@@ -124,3 +127,50 @@ def test_read_subimage(mock_open, victim):
     result = cube.read_subimage((0, 10), (0, 10), bands=[1, 2, 3])
     victim.read_subimage.assert_called_once_with((0, 10), (0, 10), [1, 2, 3])
     assert result.shape == (10, 10, 3)
+
+
+@patch("suspectral.model.hypercube.envi.open")
+def test_read_row(mock_open, victim):
+    mock_open.return_value = victim
+    cube = Hypercube("dummy/path/file.hdr")
+
+    result = cube.read_row(5, bands=[0, 1, 2])
+    victim.read_subregion.assert_called_once_with((5, 6), (0, victim.ncols), [0, 1, 2])
+    assert result.shape == (10, 10, 3)
+
+
+@patch("suspectral.model.hypercube.envi.open")
+def test_read_col(mock_open, victim):
+    mock_open.return_value = victim
+    cube = Hypercube("dummy/path/file.hdr")
+
+    result = cube.read_col(7, bands=[3, 4])
+    victim.read_subregion.assert_called_once_with((0, victim.nrows), (7, 8), [3, 4])
+    assert result.shape == (10, 10, 3)
+
+
+@patch("suspectral.model.hypercube.envi.open", side_effect=EnviDataFileNotFoundError("missing data"))
+def test_missing_data_exception(mock_open):
+    with pytest.raises(HypercubeDataMissing):
+        Hypercube("dummy/path/file.hdr")
+
+
+@patch("suspectral.model.hypercube.envi.open")
+def test_file_not_an_envi_header(mock_open):
+    mock_open.side_effect = FileNotAnEnviHeader("not a valid header")
+    with pytest.raises(HypercubeHeaderInvalid):
+        Hypercube("dummy/path/file.hdr")
+
+
+@patch("suspectral.model.hypercube.envi.open")
+def test_envi_header_parsing_error(mock_open):
+    mock_open.side_effect = EnviHeaderParsingError()
+    with pytest.raises(HypercubeHeaderInvalid):
+        Hypercube("dummy/path/file.hdr")
+
+
+@patch("suspectral.model.hypercube.envi.open")
+def test_missing_envi_header_parameter(mock_open):
+    mock_open.side_effect = MissingEnviHeaderParameter("missing parameter")
+    with pytest.raises(HypercubeHeaderInvalid):
+        Hypercube("dummy/path/file.hdr")

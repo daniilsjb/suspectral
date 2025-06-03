@@ -11,7 +11,7 @@ assert resources
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setApplicationVersion("0.0.1")
+    app.setApplicationVersion("1.0.0")
 
     palette = app.palette()
     pg.setConfigOptions(

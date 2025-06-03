@@ -3,17 +3,49 @@ from typing import cast
 import itertools
 import numpy as np
 from PySide6.QtCore import Signal, QPoint, QRect, QEvent, Qt, QPointF, QRectF, QObject, Slot
-from PySide6.QtGui import QMouseEvent, QPen, QColor, QBrush, QAction
-from PySide6.QtWidgets import QGraphicsRectItem, QMenu, QGraphicsItemGroup, QGraphicsEllipseItem
+from PySide6.QtGui import QMouseEvent, QAction
+from PySide6.QtWidgets import QMenu
 
 from suspectral.colors import get_color
 from suspectral.exporter.exporter import Exporter
 from suspectral.model.hypercube_container import HypercubeContainer
-from suspectral.view.image.image_view import ImageView
+from suspectral.tool.highlight_area import AreaHighlight
+from suspectral.tool.highlight_point import PointHighlight
 from suspectral.tool.tool import Tool
+from suspectral.view.image.image_view import ImageView
 
 
 class AreaTool(Tool):
+    """
+    Tool to select and inspect rectangular areas within an image view.
+
+    This tool allows the user to click and drag to select a rectangular region
+    on the image. It visually highlights the selection area, provides sampling points,
+    and supports exporting the spectral data within the selected region or sample points.
+
+    Signals
+    -------
+    selectionStarted : QPointF
+        Emitted when the user starts an area selection.
+    selectionMoved : QRect
+        Emitted when the selection rectangle changes during dragging.
+    selectionStopped : QRect
+        Emitted when the user finishes the selection drag.
+    selectionSampled : np.ndarray, np.ndarray
+        Emitted when sampling points within the selected area are computed.
+    selectionEnded : None
+        Emitted when the selection is reset or cleared.
+
+    Parameters
+    ----------
+    view : ImageView
+        The image view widget where interaction occurs.
+    container : HypercubeContainer
+        The hypercube model containing spectral data.
+    exporters : list[Exporter]
+        Exporters instances available for exporting selected pixel spectra.
+    """
+
     selectionStarted = Signal(QPointF)
     selectionMoved = Signal(QRect)
     selectionStopped = Signal(QRect)
@@ -32,7 +64,7 @@ class AreaTool(Tool):
         self._selection_moved = False
 
         self._highlight: AreaHighlight | None = None
-        self._samples: list[AreaPoint] = []
+        self._samples: list[PointHighlight] = []
         self._sample_xs: np.ndarray | None = None
         self._sample_ys: np.ndarray | None = None
 
@@ -121,7 +153,7 @@ class AreaTool(Tool):
 
     def _export_selection_points(self, exporter: Exporter):
         hypercube = self._container.hypercube
-        spectra = hypercube.read_pixels([(x, y) for x, y in itertools.product(self._sample_xs, self._sample_ys)])
+        spectra = hypercube.read_pixels([(x, y) for y, x in itertools.product(self._sample_ys, self._sample_xs)])
         exporter.export(hypercube.name, spectra, hypercube.wavelengths)
 
     def _start_selection(self, event: QMouseEvent):
@@ -168,8 +200,8 @@ class AreaTool(Tool):
         self._sample_xs = np.unique(np.linspace(start=tl.x(), stop=br.x() - 1, num=3).astype(int))
         self._sample_ys = np.unique(np.linspace(start=tl.y(), stop=br.y() - 1, num=3).astype(int))
 
-        for x, y in itertools.product(self._sample_xs, self._sample_ys):
-            sample = AreaPoint(self._view, QPoint(x, y), get_color(len(self._samples)))
+        for y, x in itertools.product(self._sample_ys, self._sample_xs):
+            sample = PointHighlight(self._view, QPoint(x, y), get_color(len(self._samples)))
             self._samples.append(sample)
             self._view.scene().addItem(sample)
 
@@ -224,46 +256,3 @@ class AreaTool(Tool):
             int(point.x()) + 0.5,
             int(point.y()) + 0.5,
         )
-
-
-class AreaHighlight(QGraphicsRectItem):
-    def __init__(self):
-        super().__init__()
-        r, g, b = 78, 155, 207
-
-        pen = QPen(QColor(r, g, b, 100))
-        pen.setCosmetic(True)
-        pen.setWidth(1)
-        self.setPen(pen)
-
-        brush = QBrush(QColor(r, g, b, 75))
-        self.setBrush(brush)
-
-
-class AreaPoint(QGraphicsItemGroup):
-    def __init__(self, view, point: QPoint, color: QColor):
-        super().__init__()
-
-        pen = QPen(color)
-        pen.setWidth(3)
-        pen.setCosmetic(True)
-
-        rect = QRectF(point.x(), point.y(), 1, 1)
-        scene_rect = view.image.mapRectToScene(rect)
-
-        circle_radius = 10
-        circle_rect = QRectF(
-            point.x() - circle_radius / 2 + 0.5,
-            point.y() - circle_radius / 2 + 0.5,
-            circle_radius,
-            circle_radius,
-        )
-
-        crosshair_r = QGraphicsRectItem(scene_rect)
-        crosshair_c = QGraphicsEllipseItem(circle_rect)
-
-        crosshair_r.setPen(pen)
-        crosshair_c.setPen(pen)
-
-        self.addToGroup(crosshair_r)
-        self.addToGroup(crosshair_c)

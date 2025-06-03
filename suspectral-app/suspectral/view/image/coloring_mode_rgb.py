@@ -16,6 +16,27 @@ from suspectral.view.image.coloring_mode import ColoringMode
 
 
 class ColoringModeRGB(ColoringMode):
+    """
+    An RGB coloring mode for rendering hyperspectral data using three spectral bands.
+
+    This widget provides controls to assign individual spectral bands to the red, green,
+    and blue channels of an image. Users can select bands either by index or by wavelength.
+    It automatically updates when a new hypercube is opened and emits RGB images based
+    on user-selected band combinations.
+
+    Signals
+    -------
+    imageChanged : Signal(np.ndarray)
+        Emitted when a new RGB image should be rendered.
+
+    Parameters
+    ----------
+    model : HypercubeContainer
+        The container that manages and provides access to the currently loaded hypercube.
+    parent : QWidget or None, optional
+        The parent QWidget of this widget, by default None.
+    """
+
     def __init__(self, model: HypercubeContainer, parent: QWidget | None = None):
         super().__init__(parent)
         self._model = model
@@ -29,9 +50,9 @@ class ColoringModeRGB(ColoringMode):
         self._band_g = None
         self._band_b = None
 
-        self._channel_r = BandColorChannel(name="R")
-        self._channel_g = BandColorChannel(name="G")
-        self._channel_b = BandColorChannel(name="B")
+        self._channel_r = BandColorChannel(name="R", parent=self)
+        self._channel_g = BandColorChannel(name="G", parent=self)
+        self._channel_b = BandColorChannel(name="B", parent=self)
 
         self._channel_r.valueChanged.connect(self._on_r_changed)
         self._channel_g.valueChanged.connect(self._on_g_changed)
@@ -44,23 +65,29 @@ class ColoringModeRGB(ColoringMode):
         channels_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         channels_layout.setSpacing(8)
 
-        self.indexing_label = QLabel("Indexing:")
-        self.indexing_dropdown = QComboBox()
-        self.indexing_dropdown.addItem("Band Number")
-        self.indexing_dropdown.addItem("Wavelength")
-        self.indexing_dropdown.currentTextChanged.connect(self._set_indexing)
-        self.indexing_dropdown.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self._indexing_label = QLabel("Indexing:")
+        self._indexing_dropdown = QComboBox(self)
+        self._indexing_dropdown.addItem("Band Number")
+        self._indexing_dropdown.addItem("Wavelength")
+        self._indexing_dropdown.currentTextChanged.connect(self._set_indexing)
+        self._indexing_dropdown.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         indexing_layout = QHBoxLayout()
-        indexing_layout.addWidget(self.indexing_label)
-        indexing_layout.addWidget(self.indexing_dropdown)
+        indexing_layout.addWidget(self._indexing_label)
+        indexing_layout.addWidget(self._indexing_dropdown)
         indexing_layout.setSpacing(16)
 
-        layout = QVBoxLayout()
+        layout = QVBoxLayout(self)
         layout.addLayout(indexing_layout)
         layout.addLayout(channels_layout)
         layout.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(layout)
+
+    def activate(self):
+        self._on_bands_changed(
+            self._band_r,
+            self._band_g,
+            self._band_b,
+        )
 
     @Slot()
     def _handle_hypercube_opened(self, hypercube: Hypercube):
@@ -68,24 +95,17 @@ class ColoringModeRGB(ColoringMode):
         self._wavelengths = hypercube.wavelengths
 
         indexing_enabled = hypercube.wavelengths is not None
-        self.indexing_label.setVisible(indexing_enabled)
-        self.indexing_dropdown.setVisible(indexing_enabled)
+        self._indexing_label.setVisible(indexing_enabled)
+        self._indexing_dropdown.setVisible(indexing_enabled)
 
         if not indexing_enabled:
-            self.indexing_dropdown.setCurrentText("Band Number")
+            self._indexing_dropdown.setCurrentText("Band Number")
 
         r, g, b = hypercube.default_bands
         self._band_r = r
         self._band_g = g
         self._band_b = b
         self._reset()
-
-    def start(self):
-        self._on_bands_changed(
-            self._band_r,
-            self._band_g,
-            self._band_b,
-        )
 
     def _set_indexing(self, value: str):
         self._indexing = value

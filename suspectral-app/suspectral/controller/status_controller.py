@@ -4,10 +4,27 @@ from suspectral.model.hypercube import Hypercube
 from suspectral.model.hypercube_container import HypercubeContainer
 from suspectral.tool.manager import ToolManager
 from suspectral.view.image.image_view import ImageView
-from suspectral.view.status_view import StatusView
+from suspectral.view.status.status_view import StatusView
 
 
 class StatusController(QObject):
+    """
+    Controller which synchronizes the status view with image view, tools, and hypercube model.
+
+    Parameters
+    ----------
+    view : StatusView
+        The status view widget to update.
+    image : ImageView
+        The image view emitting cursor position signals.
+    tools : ToolManager
+        The tool manager providing selection signals.
+    model : HypercubeContainer
+        The hypercube container model emitting opened and closed signals.
+    parent : QObject or None, optional
+        The parent object of the controller, by default None.
+    """
+
     def __init__(self, *,
                  view: StatusView,
                  image: ImageView,

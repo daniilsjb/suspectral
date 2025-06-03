@@ -1,8 +1,12 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource>
-        <file>data/CIE_XYZ_1931.csv</file>
-        <file>data/Sony_IMX219.csv</file>
+        <file>data/sensitivities/CIE_XYZ_1931.csv</file>
+        <file>data/sensitivities/SRF_SonyIMX219.csv</file>
+        <file>data/sensitivities/SRF_BaslerAce2.csv</file>
+        <file>data/illuminants/CIE_std_illum_A.csv</file>
+        <file>data/illuminants/CIE_std_illum_D50.csv</file>
+        <file>data/illuminants/CIE_std_illum_D65.csv</file>
     </qresource>
     <qresource>
         <file>icons/suspectral.ico</file>
@@ -19,9 +23,7 @@
         <file>icons/dark/flip-vertical.svg</file>
         <file>icons/dark/folder-open.svg</file>
         <file>icons/dark/hand-point.svg</file>
-        <file>icons/dark/help.svg</file>
         <file>icons/dark/image.svg</file>
-        <file>icons/dark/license.svg</file>
         <file>icons/dark/shape.svg</file>
         <file>icons/dark/rotate-left.svg</file>
         <file>icons/dark/rotate-right.svg</file>
@@ -43,9 +45,7 @@
         <file>icons/light/flip-vertical.svg</file>
         <file>icons/light/folder-open.svg</file>
         <file>icons/light/hand-point.svg</file>
-        <file>icons/light/help.svg</file>
         <file>icons/light/image.svg</file>
-        <file>icons/light/license.svg</file>
         <file>icons/light/shape.svg</file>
         <file>icons/light/rotate-left.svg</file>
         <file>icons/light/rotate-right.svg</file>

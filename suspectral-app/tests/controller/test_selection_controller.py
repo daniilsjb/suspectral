@@ -7,15 +7,16 @@ from PySide6.QtCore import QPoint
 from suspectral.controller.selection_controller import SelectionController
 from suspectral.model.hypercube_container import HypercubeContainer
 from suspectral.tool.manager import ToolManager
-from suspectral.view.selection_view import SelectionView
+from suspectral.view.selection.selection_view import SelectionView
 
 
 @pytest.fixture
 def victim(qtbot):
-    view = MagicMock(spec=SelectionView)
-    model = MagicMock(spec=HypercubeContainer)
-    tools = MagicMock(spec=ToolManager)
-    return SelectionController(view=view, tools=tools, model=model)
+    return SelectionController(
+        tools=MagicMock(spec=ToolManager),
+        model=MagicMock(spec=HypercubeContainer),
+        view=MagicMock(spec=SelectionView),
+    )
 
 
 def test_handle_hypercube_opened(victim, qtbot):
@@ -42,7 +43,12 @@ def test_handle_selection_sampled(victim, qtbot):
     xs = np.array([1, 2])
     ys = np.array([3, 4])
     victim._handle_selection_sampled(xs, ys)
-    victim._view.add_points.assert_called_once_with([QPoint(1, 3), QPoint(1, 4), QPoint(2, 3), QPoint(2, 4)])
+    victim._view.add_points.assert_called_once_with([
+        QPoint(1, 3),
+        QPoint(2, 3),
+        QPoint(1, 4),
+        QPoint(2, 4),
+    ])
 
 
 def test_handle_pixel_clicked(victim, qtbot):
@@ -54,28 +60,6 @@ def test_handle_pixel_clicked(victim, qtbot):
 def test_handle_pixel_cleared(victim, qtbot):
     victim._handle_pixel_cleared()
     victim._view.clear.assert_called_once()
-
-
-@pytest.mark.parametrize(
-    "xs, ys, expected_calls",
-    [
-        (np.array([1, 2]), np.array([3, 4]), [QPoint(1, 3), QPoint(1, 4), QPoint(2, 3), QPoint(2, 4)]),
-        (np.array([0]), np.array([0]), [QPoint(0, 0)]),
-    ]
-)
-def test_handle_selection_sampled_parametrized(victim, qtbot, xs, ys, expected_calls):
-    victim._handle_selection_sampled(xs, ys)
-    victim._view.add_points.assert_called_once_with(expected_calls)
-
-
-@pytest.mark.parametrize("input_point, expected", [
-    (QPoint(0, 0), [QPoint(0, 0)]),
-    (QPoint(1, 1), [QPoint(1, 1)]),
-    (QPoint(2, 2), [QPoint(2, 2)]),
-])
-def test_handle_pixel_clicked_parametrized(victim, qtbot, input_point, expected):
-    victim._handle_pixel_clicked(input_point)
-    victim._view.add_point.assert_called_once_with(expected[0])
 
 
 def test_boundary_value_for_selection_sampled(victim, qtbot):

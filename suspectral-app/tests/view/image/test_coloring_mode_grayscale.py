@@ -50,7 +50,7 @@ def test_handle_hypercube_opened_band_number(grayscale_widget, hypercube_contain
     hypercube_container.emit_opened(hypercube)
 
     assert grayscale_widget._num_bands == 10
-    assert not grayscale_widget.indexing_dropdown.isVisible()
+    assert not grayscale_widget._indexing_dropdown.isVisible()
     assert grayscale_widget._band == 0
 
 
@@ -127,6 +127,6 @@ def test_grayscale_start_emits_image_changed(grayscale_widget, qtbot):
     grayscale_widget._model.hypercube = DummyHypercube()
 
     with qtbot.waitSignal(grayscale_widget.imageChanged, timeout=500) as blocker:
-        grayscale_widget.start()
+        grayscale_widget.activate()
 
     assert blocker.args[0] == "grayscale_band_2"

@@ -1,25 +1,24 @@
-from unittest.mock import Mock
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
 from PySide6.QtCore import QPoint, QRect
 from PySide6.QtGui import QPixmap
 
+from suspectral.view.status.status_view import StatusView
+from suspectral.view.status.status_cursor import CursorStatus
+from suspectral.view.status.status_memory import MemoryStatus
+from suspectral.view.status.status_shape import ShapeStatus
+from suspectral.view.status.status_view_item import StatusViewItem
+from suspectral.view.status.status_wavelength import WavelengthStatus
+
 import resources
 assert resources
 
-from suspectral.view.status_view import (
-    CursorStatus,
-    MemoryStatus,
-    ShapeStatus,
-    StatusView,
-    StatusBarItem,
-    WavelengthStatus,
-)
 
 @pytest.fixture
 def hypercube():
-    mock = Mock()
+    mock = MagicMock()
     mock.num_cols = 100
     mock.num_rows = 200
     mock.num_bands = 150
@@ -29,23 +28,15 @@ def hypercube():
     return mock
 
 
-def test_status_bar_item_initialization(qtbot):
-    victim = StatusBarItem(QPixmap(16, 16))
-    qtbot.addWidget(victim)
-
-    assert victim.layout().count() == 2
-    assert victim._label.text() == ""
-
-
-def test_status_bar_item_clear(qtbot):
-    victim = StatusBarItem(QPixmap(16, 16))
+def test_status_view_item_clear(qtbot):
+    victim = StatusViewItem(QPixmap(16, 16))
     qtbot.addWidget(victim)
 
     victim._label.setText("Lorem ipsum")
-    assert victim._label.text() != ""
+    assert victim._label.text()
 
     victim.clear()
-    assert victim._label.text() == ""
+    assert not victim._label.text()
 
 
 def test_cursor_status_initialization(qtbot):
@@ -60,8 +51,7 @@ def test_cursor_status_set_position(qtbot):
     victim = CursorStatus()
     qtbot.addWidget(victim)
 
-    position = QPoint(42, 88)
-    victim.set(position)
+    victim.set(QPoint(42, 88))
     assert victim._label.text() == "42, 88px"
 
 
@@ -89,14 +79,6 @@ def test_memory_status_initialization(qtbot):
     assert not victim._label.text()
 
 
-def test_memory_status_set_value(qtbot):
-    victim = MemoryStatus()
-    qtbot.addWidget(victim)
-
-    victim.set(2048)
-    assert victim._label.text() == "2.00 KB"
-
-
 @pytest.mark.parametrize("num_bytes,expected", [
     (0, "0.00 B"),
     (1, "1.00 B"),
@@ -116,8 +98,12 @@ def test_memory_status_set_value(qtbot):
     (5_500_000_000_000_000, "4.88 PB"),
     (1_152_921_504_606_846_976, "1.00 EB"),
 ])
-def test_memory_status_stringify(num_bytes, expected):
-    assert MemoryStatus._stringify(num_bytes) == expected
+def test_memory_status_stringify(qtbot, num_bytes, expected):
+    victim = MemoryStatus()
+    qtbot.addWidget(victim)
+
+    victim.set(num_bytes)
+    assert victim._label.text() == expected
 
 
 def test_memory_status_set_negative_value(qtbot):
@@ -133,7 +119,7 @@ def test_wavelength_status_initialization(qtbot):
     qtbot.addWidget(victim)
 
     assert not victim._icon.pixmap().isNull()
-    assert victim._label.text() == ""
+    assert not victim._label.text()
 
 
 @pytest.mark.parametrize("wavelengths,wavelengths_unit,expected_text", [
@@ -152,71 +138,71 @@ def test_wavelength_status_set(qtbot, wavelengths, wavelengths_unit, expected_te
     assert victim._label.text() == expected_text
 
 
-def test_status_bar_initialization(qtbot):
+def test_status_view_initialization(qtbot):
     victim = StatusView()
     qtbot.addWidget(victim)
 
-    assert victim._shape_status._label.text() == ""
-    assert victim._cursor_status._label.text() == ""
-    assert victim._memory_status._label.text() == ""
-    assert victim._wavelength_status._label.text() == ""
+    assert not victim._shape_status._label.text()
+    assert not victim._cursor_status._label.text()
+    assert not victim._memory_status._label.text()
+    assert not victim._wavelength_status._label.text()
 
 
-def test_status_bar_update_hypercube_status(qtbot, hypercube):
+def test_status_view_update_hypercube_status(qtbot, hypercube):
     victim = StatusView()
     qtbot.addWidget(victim)
 
     victim.update_hypercube(hypercube)
-
     assert victim._shape_status._label.text() == "100 × 200 × 150"
-    assert victim._wavelength_status._label.text() == "400 : 700 : 10 (nm)"
     assert victim._memory_status._label.text() == "5.72 MB"
+    assert victim._wavelength_status._label.text() == "400 : 700 : 10 (nm)"
 
 
-def test_status_bar_update_hypercube_status_without_wavelengths(qtbot, hypercube):
+def test_status_view_update_hypercube_status_without_wavelengths(qtbot, hypercube):
     victim = StatusView()
     qtbot.addWidget(victim)
 
     hypercube.wavelengths = None
     victim.update_hypercube(hypercube)
-
     assert victim._shape_status._label.text() == "100 × 200 × 150"
-    assert victim._wavelength_status._label.text() == ""
     assert victim._memory_status._label.text() == "5.72 MB"
+    assert not victim._wavelength_status._label.text()
 
 
-def test_status_bar_update_cursor_status(qtbot):
+def test_status_view_update_cursor_status(qtbot):
     victim = StatusView()
     qtbot.addWidget(victim)
 
     victim.update_cursor(QPoint(10, 20))
     assert victim._cursor_status._label.text() == "10, 20px"
     victim.clear_cursor()
-    assert victim._cursor_status._label.text() == ""
+    assert not victim._cursor_status._label.text()
 
 
-def test_status_bar_update_selection_status(qtbot):
+def test_status_view_update_selection_status(qtbot):
     victim = StatusView()
     qtbot.addWidget(victim)
 
     victim.update_selection(QRect(10, 10, 100, 100))
     assert victim._selection_status._label.text() == "99 × 99px"
     victim.clear_selection()
-    assert victim._selection_status._label.text() == ""
+    assert not victim._selection_status._label.text()
 
 
-def test_status_bar_clear(qtbot):
+def test_status_view_clear(qtbot):
     victim = StatusView()
     qtbot.addWidget(victim)
 
-    victim._shape_status._label.setText("dummy")
-    victim._cursor_status._label.setText("dummy")
-    victim._memory_status._label.setText("dummy")
-    victim._wavelength_status._label.setText("dummy")
+    victim._shape_status._label.setText("Lorem ipsum dolor sit amet")
+    victim._cursor_status._label.setText("Lorem ipsum dolor sit amet")
+    victim._memory_status._label.setText("Lorem ipsum dolor sit amet")
+    victim._selection_status._label.setText("Lorem ipsum dolor sit amet")
+    victim._wavelength_status._label.setText("Lorem ipsum dolor sit amet")
 
     victim.clear()
 
-    assert victim._shape_status._label.text() == ""
-    assert victim._cursor_status._label.text() == ""
-    assert victim._memory_status._label.text() == ""
-    assert victim._wavelength_status._label.text() == ""
+    assert not victim._shape_status._label.text()
+    assert not victim._cursor_status._label.text()
+    assert not victim._memory_status._label.text()
+    assert not victim._selection_status._label.text()
+    assert not victim._wavelength_status._label.text()

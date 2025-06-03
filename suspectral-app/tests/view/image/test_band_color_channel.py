@@ -1,6 +1,6 @@
 import pytest
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QLabel
+from PySide6.QtWidgets import QLabel, QSpinBox, QSlider
 
 from suspectral.view.image.band_color_channel import BandColorChannel
 
@@ -14,17 +14,21 @@ def victim(qtbot):
 
 def test_initial_state_with_label(victim):
     layout = victim.layout()
-    label = layout.itemAt(0).widget()
-    assert isinstance(label, QLabel)
-    assert label.text() == "Test"
+    assert layout.count() == 3
+    assert isinstance(layout.itemAt(0).widget(), QLabel)
+    assert isinstance(layout.itemAt(1).widget(), QSlider)
+    assert isinstance(layout.itemAt(2).widget(), QSpinBox)
+    assert layout.itemAt(0).widget().text() == "Test"
 
 
 def test_initial_state_without_label(qtbot):
-    widget = BandColorChannel()
-    qtbot.addWidget(widget)
-    layout = widget.layout()
+    victim = BandColorChannel()
+    qtbot.addWidget(victim)
+
+    layout = victim.layout()
     assert layout.count() == 2
-    assert not isinstance(layout.itemAt(0).widget(), QLabel)
+    assert isinstance(layout.itemAt(0).widget(), QSlider)
+    assert isinstance(layout.itemAt(1).widget(), QSpinBox)
 
 
 def test_reset_sets_spinbox_and_slider(victim):
@@ -40,19 +44,22 @@ def test_reset_sets_spinbox_and_slider(victim):
     assert victim.slider.tickInterval() == 10
 
 
-def test_slider_update_updates_spinbox(victim):
+def test_slider_update_updates_spinbox(victim, qtbot):
     victim.reset(0, 100, 20)
-    victim.slider.setValue(70)
-    victim._on_slider_update()
-    assert victim.spinbox.value() == 70
+
+    with qtbot.waitSignal(victim.slider.sliderReleased, timeout=500):
+        pos = victim.slider.rect().center()
+        qtbot.mousePress(victim.slider, Qt.MouseButton.LeftButton, pos=pos)
+        qtbot.mouseRelease(victim.slider, Qt.MouseButton.LeftButton, pos=pos)
+
+    assert victim.slider.value() == 50
+    assert victim.spinbox.value() == 50
 
 
-def test_spinbox_update_updates_slider_and_emits_signal(victim, qtbot):
+def test_spinbox_update_updates_slider(victim):
     victim.reset(0, 100, 20)
-    with qtbot.waitSignal(victim.valueChanged, timeout=500) as blocker:
-        victim.spinbox.setValue(80)
+    victim.spinbox.setValue(80)
     assert victim.slider.value() == 80
-    assert blocker.args == [80]
 
 
 def test_spinbox_change_triggers_signal(victim, qtbot):

@@ -101,14 +101,14 @@ def test_start_emits_initial_rgb(victim, qtbot):
     victim._model.hypercube = DummyHypercube()
 
     with qtbot.waitSignal(victim.imageChanged, timeout=500) as blocker:
-        victim.start()
+        victim.activate()
 
     assert blocker.args[0] == "rgb_1_2_3"
 
 def test_handle_hypercube_opened_without_wavelength(victim, hypercube_container, qtbot):
     hypercube = DummyHypercube(num_bands=3, wavelengths=None)
     hypercube_container.emit_opened(hypercube)
-    assert victim.indexing_dropdown.currentText() == "Band Number"
+    assert victim._indexing_dropdown.currentText() == "Band Number"
 
 def test_set_indexing_triggers_reset(victim, mocker):
     mock_reset = mocker.patch.object(victim, "_reset")

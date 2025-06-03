@@ -4,10 +4,25 @@ from PySide6.QtCore import QObject, Slot, QPoint
 
 from suspectral.model.hypercube_container import HypercubeContainer
 from suspectral.tool.manager import ToolManager
-from suspectral.view.selection_view import SelectionView
+from suspectral.view.selection.selection_view import SelectionView
 
 
 class SelectionController(QObject):
+    """
+    Controller which synchronizes the selection view with tools and hypercube events.
+
+    Parameters
+    ----------
+    view : SelectionView
+        The selection view widget to update.
+    tools : ToolManager
+        The tool manager emitting signals related to selection and inspection.
+    model : HypercubeContainer
+        The hypercube container model emitting opened and closed signals.
+    parent : QObject or None, optional
+        The parent object of the controller, by default None.
+    """
+
     def __init__(self, *,
                  view: SelectionView,
                  tools: ToolManager,
@@ -48,7 +63,7 @@ class SelectionController(QObject):
 
     @Slot()
     def _handle_selection_sampled(self, xs: np.ndarray, ys: np.ndarray):
-        self._view.add_points([QPoint(x, y) for x, y in itertools.product(xs, ys)])
+        self._view.add_points([QPoint(x, y) for y, x in itertools.product(ys, xs)])
 
     @Slot()
     def _handle_pixel_clicked(self, point: QPoint):

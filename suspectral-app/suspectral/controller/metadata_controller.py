@@ -2,10 +2,23 @@ from PySide6.QtCore import QObject, Slot
 
 from suspectral.model.hypercube import Hypercube
 from suspectral.model.hypercube_container import HypercubeContainer
-from suspectral.view.metadata_view import MetadataView
+from suspectral.view.metadata.metadata_view import MetadataView
 
 
 class MetadataController(QObject):
+    """
+    Controller which synchronizes the metadata view with the currently opened hypercube.
+
+    Parameters
+    ----------
+    view : MetadataView
+        The metadata view to update.
+    model : HypercubeContainer
+        The model that manages hypercube loading and closing.
+    parent : QObject or None, optional
+        The parent object of the controller, by default None.
+    """
+
     def __init__(self, *,
                  view: MetadataView,
                  model: HypercubeContainer,

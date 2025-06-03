@@ -32,9 +32,20 @@ SOFTWARE.
 """
 
 class LicenseDialog(QDialog):
+    """
+    A dialog window that displays the license agreement text.
+
+    The license text is shown in a read-only text edit widget. The dialog
+    includes an OK button to close the window.
+
+    Parameters
+    ----------
+    parent : QWidget or None, optional
+        The parent widget of the dialog, by default None.
+    """
+
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-
         self.setWindowTitle("License Agreement")
         self.resize(500, 400)
 
@@ -42,9 +53,9 @@ class LicenseDialog(QDialog):
         text.setPlainText(re.sub(r"(?<!\n)\n(?!\n)", " ", LICENSE))
         text.setReadOnly(True)
 
-        button = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
-        button.accepted.connect(self.accept)
+        okay = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+        okay.accepted.connect(self.accept)
 
         layout = QVBoxLayout(self)
         layout.addWidget(text)
-        layout.addWidget(button)
+        layout.addWidget(okay)

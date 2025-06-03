@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import pytest
 from PySide6.QtCore import QEvent, Qt, QObject
 
@@ -18,8 +20,8 @@ class DummyEvent(QObject):
 
 
 @pytest.fixture
-def mock_image_view(mocker):
-    return mocker.create_autospec(ImageView)
+def mock_image_view():
+    return MagicMock(spec=ImageView)
 
 
 @pytest.fixture

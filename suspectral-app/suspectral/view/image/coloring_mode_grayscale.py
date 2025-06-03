@@ -16,6 +16,26 @@ from suspectral.view.image.coloring_mode import ColoringMode
 
 
 class ColoringModeGrayscale(ColoringMode):
+    """
+    A grayscale coloring mode for rendering a single band from a hyperspectral cube.
+
+    This widget allows users to choose one spectral band, either by index or by wavelength,
+    and display it as a grayscale image. It responds to changes in the active hypercube
+    and automatically updates its controls and display logic accordingly.
+
+    Signals
+    -------
+    imageChanged : Signal(np.ndarray)
+        Emitted when the grayscale image should be updated.
+
+    Parameters
+    ----------
+    model : HypercubeContainer
+        The container managing the currently loaded hyperspectral dataset.
+    parent : QWidget or None, optional
+        The parent QWidget of this widget, by default None.
+    """
+
     def __init__(self, model: HypercubeContainer, parent: QWidget | None = None):
         super().__init__(parent)
         self._model = model
@@ -26,7 +46,7 @@ class ColoringModeGrayscale(ColoringMode):
         self._num_bands = None
 
         self._band = None
-        self._channel = BandColorChannel()
+        self._channel = BandColorChannel(parent=self)
         self._channel.valueChanged.connect(self._on_band_changed)
 
         channels_layout = QVBoxLayout()
@@ -34,23 +54,25 @@ class ColoringModeGrayscale(ColoringMode):
         channels_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         channels_layout.setSpacing(8)
 
-        self.indexing_label = QLabel("Indexing:")
-        self.indexing_dropdown = QComboBox()
-        self.indexing_dropdown.addItem("Band Number")
-        self.indexing_dropdown.addItem("Wavelength")
-        self.indexing_dropdown.currentTextChanged.connect(self._set_indexing)
-        self.indexing_dropdown.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self._indexing_label = QLabel("Indexing:")
+        self._indexing_dropdown = QComboBox(self)
+        self._indexing_dropdown.addItem("Band Number")
+        self._indexing_dropdown.addItem("Wavelength")
+        self._indexing_dropdown.currentTextChanged.connect(self._set_indexing)
+        self._indexing_dropdown.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         indexing_layout = QHBoxLayout()
-        indexing_layout.addWidget(self.indexing_label)
-        indexing_layout.addWidget(self.indexing_dropdown)
+        indexing_layout.addWidget(self._indexing_label)
+        indexing_layout.addWidget(self._indexing_dropdown)
         indexing_layout.setSpacing(16)
 
-        layout = QVBoxLayout()
+        layout = QVBoxLayout(self)
         layout.addLayout(indexing_layout)
         layout.addLayout(channels_layout)
         layout.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(layout)
+
+    def activate(self):
+        self._on_band_changed(self._band)
 
     @Slot()
     def _handle_hypercube_opened(self, hypercube: Hypercube):
@@ -58,17 +80,14 @@ class ColoringModeGrayscale(ColoringMode):
         self._wavelengths = hypercube.wavelengths
 
         indexing_enabled = hypercube.wavelengths is not None
-        self.indexing_label.setVisible(indexing_enabled)
-        self.indexing_dropdown.setVisible(indexing_enabled)
+        self._indexing_label.setVisible(indexing_enabled)
+        self._indexing_dropdown.setVisible(indexing_enabled)
 
         if not indexing_enabled:
-            self.indexing_dropdown.setCurrentText("Band Number")
+            self._indexing_dropdown.setCurrentText("Band Number")
 
         self._band = hypercube.default_bands[0]
         self._reset()
-
-    def start(self):
-        self._on_band_changed(self._band)
 
     def _set_indexing(self, value: str):
         self._indexing = value

@@ -21,24 +21,27 @@ from suspectral.controller.metadata_controller import MetadataController
 from suspectral.controller.selection_controller import SelectionController
 from suspectral.controller.spectral_controller import SpectralController
 from suspectral.controller.status_controller import StatusController
-from suspectral.exporter.exporter_clipboard import ClipboardExporter
-from suspectral.exporter.exporter_csv import CsvExporter
-from suspectral.exporter.exporter_matlab import MatlabExporter
-from suspectral.exporter.exporter_numpy import NpyExporter
+from suspectral.controller.toolbar_controller import ToolbarController
+from suspectral.exporter.exporter import Exporter
+from suspectral.exporter.formatter_csv import CsvFormatter
+from suspectral.exporter.formatter_matlab import MatlabFormatter
+from suspectral.exporter.formatter_numpy import NpyFormatter
+from suspectral.exporter.writer_clipboard import ClipboardWriter
+from suspectral.exporter.writer_file import FileWriter
 from suspectral.help import HelpDialog
 from suspectral.license import LicenseDialog
 from suspectral.model.hypercube import Hypercube, HypercubeDataMissing, HypercubeHeaderInvalid
 from suspectral.model.hypercube_container import HypercubeContainer
 from suspectral.tool.manager import ToolManager
 from suspectral.tool.tool import Tool
-from suspectral.view.image.image_options_view import ImageOptionsView
+from suspectral.view.image.image_controls_view import ImageControlsView
 from suspectral.view.image.image_view import ImageView
-from suspectral.view.metadata_view import MetadataView
-from suspectral.view.selection_view import SelectionView
-from suspectral.view.spectral_view import SpectralView
-from suspectral.view.status_view import StatusView
-from suspectral.view.toolbar_view import ToolbarView
-from suspectral.widget.theme_icon import ThemeIcon
+from suspectral.view.metadata.metadata_view import MetadataView
+from suspectral.view.selection.selection_view import SelectionView
+from suspectral.view.spectral.spectral_view import SpectralView
+from suspectral.view.status.status_view import StatusView
+from suspectral.view.toolbar.toolbar_view import ToolbarView
+from suspectral.theme_icon import ThemeIcon
 
 
 class Suspectral(QMainWindow):
@@ -54,24 +57,41 @@ class Suspectral(QMainWindow):
         self._model.closed.connect(self._handle_hypercube_closed)
 
         exporters = [
-            ClipboardExporter(),
-            MatlabExporter(),
-            NpyExporter(),
-            CsvExporter(),
+            Exporter(
+                label="Clipboard",
+                writer=ClipboardWriter(),
+                formatter=CsvFormatter(),
+            ),
+            Exporter(
+                label="CSV",
+                writer=FileWriter(suffix=".csv", filters="CSV (*.csv)"),
+                formatter=CsvFormatter(),
+            ),
+            Exporter(
+                label="MATLAB",
+                writer=FileWriter(suffix=".mat", filters="MATLAB (*.mat)"),
+                formatter=MatlabFormatter(),
+            ),
+            Exporter(
+                label="NPy",
+                writer=FileWriter(suffix=".npy", filters="NumPy (*.npy)"),
+                formatter=NpyFormatter(),
+            ),
         ]
 
         self._image_view = ImageView(self)
-        self._image_controls_view = ImageOptionsView(self._model, self)
-        self._image_controller = ImageController(
-            image_options_view=self._image_controls_view,
-            image_display_view=self._image_view,
+        self._tools = ToolManager(
+            exporters=exporters,
+            view=self._image_view,
             model=self._model,
             parent=self,
         )
 
-        self._tools = ToolManager(
-            exporters=exporters,
-            view=self._image_view,
+        self._image_controls_view = ImageControlsView(self._model, self)
+        self._image_controller = ImageController(
+            tools=self._tools,
+            image_controls_view=self._image_controls_view,
+            image_display_view=self._image_view,
             model=self._model,
             parent=self,
         )
@@ -85,9 +105,13 @@ class Suspectral(QMainWindow):
             parent=self,
         )
 
-        self._toolbar = ToolbarView(
+        self._toolbar_view = ToolbarView(
             image=self._image_view,
             tools=self._tools,
+            parent=self,
+        )
+        self._toolbar_controller = ToolbarController(
+            view=self._toolbar_view,
             model=self._model,
             parent=self,
         )
@@ -100,8 +124,9 @@ class Suspectral(QMainWindow):
             parent=self,
         )
 
-        self._spectral_view = SpectralView(self._model, exporters, self)
+        self._spectral_view = SpectralView(model=self._model, parent=self)
         self._spectral_controller = SpectralController(
+            exporters=exporters,
             view=self._spectral_view,
             tools=self._tools,
             model=self._model,
@@ -118,7 +143,7 @@ class Suspectral(QMainWindow):
         self._create_menubar()
         self._create_docks()
 
-        self.addToolBar(self._toolbar)
+        self.addToolBar(self._toolbar_view)
         self.setStatusBar(self._status_view)
         self.setCentralWidget(self._image_view)
 
@@ -223,11 +248,9 @@ class Suspectral(QMainWindow):
             about_action.triggered.connect(self._handle_about)
 
             help_action = menu.addAction("Help")
-            help_action.setIcon(ThemeIcon("help.svg"))
             help_action.triggered.connect(self._handle_help)
 
             license_action = menu.addAction("License")
-            license_action.setIcon(ThemeIcon("license.svg"))
             license_action.triggered.connect(self._handle_license)
 
         create_file_menu()

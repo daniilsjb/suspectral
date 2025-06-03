@@ -5,13 +5,15 @@ import pytest
 from PySide6.QtCore import QPointF, QRect, Qt, QEvent, QPoint
 from PySide6.QtGui import QMouseEvent
 
+from suspectral.exporter.exporter import Exporter
+from suspectral.model.hypercube_container import HypercubeContainer
 from suspectral.tool.tool_area import AreaTool, AreaHighlight
 from suspectral.view.image.image_view import ImageView
 
 
 @pytest.fixture
 def mock_view():
-    mock = MagicMock()
+    mock = MagicMock(spec=ImageView)
     mock.image.pixmap.return_value.width.return_value = 100
     mock.image.pixmap.return_value.height.return_value = 100
     mock.mapToScene.side_effect = lambda p: QPointF(p.x(), p.y())
@@ -27,7 +29,7 @@ def mock_view():
 
 @pytest.fixture
 def mock_container():
-    container = MagicMock()
+    container = MagicMock(spec=HypercubeContainer)
     container.hypercube.name = "test_cube"
     container.hypercube.wavelengths = np.array([1, 2, 3])
     container.hypercube.read_subregion.return_value = np.ones((2, 2, 3))
@@ -37,7 +39,7 @@ def mock_container():
 
 @pytest.fixture
 def mock_exporter():
-    exporter = MagicMock()
+    exporter = MagicMock(spec=Exporter)
     exporter.label = "Exporter1"
     exporter.export = MagicMock()
     return exporter
@@ -224,6 +226,7 @@ def test_export_selection_area_calls_exporter(victim, mock_exporter, mock_contai
         args[2],
         mock_container.hypercube.wavelengths
     )
+
 
 def test_export_selection_points_calls_exporter(victim, mock_exporter, mock_container):
     victim._sample_xs = np.array([0, 1])

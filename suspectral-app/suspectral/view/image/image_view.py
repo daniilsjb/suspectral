@@ -1,9 +1,4 @@
-from PySide6.QtCore import (
-    QPoint,
-    QPointF,
-    QRectF,
-    Signal,
-)
+from PySide6.QtCore import QPoint, QPointF, QRectF, Signal
 from PySide6.QtGui import (
     Qt,
     QContextMenuEvent,
@@ -13,6 +8,7 @@ from PySide6.QtGui import (
     QWheelEvent,
 )
 from PySide6.QtWidgets import (
+    QGraphicsPixmapItem,
     QGraphicsScene,
     QGraphicsView,
     QMenu,
@@ -21,6 +17,31 @@ from PySide6.QtWidgets import (
 
 
 class ImageView(QGraphicsView):
+    """
+    A widget for displaying and interacting with images using QGraphicsView.
+
+    Signals
+    -------
+    cursorMovedInside(QPoint)
+        Emitted when the mouse cursor moves inside the boundaries of the displayed image.
+        Provides the cursor position in image coordinates.
+
+    cursorMovedOutside()
+        Emitted when the mouse cursor moves outside the image boundaries.
+
+    contextMenuRequested(QMenu)
+        Emitted when the context menu is requested (usually by right-clicking) on the image.
+        Provides the QMenu object for adding custom actions.
+
+    Attributes
+    ----------
+    ZOOM_MIN : float
+        Minimum allowed zoom factor.
+
+    ZOOM_MAX : float
+        Maximum allowed zoom factor.
+    """
+
     cursorMovedInside = Signal(QPoint)
     cursorMovedOutside = Signal()
     contextMenuRequested = Signal(QMenu)
@@ -39,15 +60,20 @@ class ImageView(QGraphicsView):
         self.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
 
-    @property
-    def image(self):
-        return self._image
-
     def display(self, pixmap: QPixmap):
+        """
+        Display the given QPixmap in the view and update the scene rectangle.
+
+        Parameters
+        ----------
+        pixmap : QPixmap
+            The image to display.
+        """
         self.image.setPixmap(pixmap)
         self.setSceneRect(self.image.boundingRect())
 
     def reset(self):
+        """Clear the currently displayed image and reset zoom and transformations."""
         self.image.setPixmap(QPixmap())
         self.setSceneRect(QRectF(0, 0, 1, 1))
 
@@ -55,18 +81,23 @@ class ImageView(QGraphicsView):
         self._zoom = 1.0
 
     def rotate_left(self):
+        """Rotate the image 90 degrees counterclockwise."""
         self.rotate(-90.0)
 
     def rotate_right(self):
+        """Rotate the image 90 degrees clockwise."""
         self.rotate(+90.0)
 
     def flip_vertically(self):
+        """Flip the image on the y-axis."""
         self.scale(+1.0, -1.0)
 
     def flip_horizontally(self):
+        """Flip the image on the x-axis."""
         self.scale(-1.0, +1.0)
 
     def zoom(self, factor: float = 1.2):
+        """Zoom the view by the given factor, clamped to allowed zoom limits."""
         zoom = self._zoom * factor
         zoom = max(zoom, self.ZOOM_MIN)
         zoom = min(zoom, self.ZOOM_MAX)
@@ -76,12 +107,15 @@ class ImageView(QGraphicsView):
         self._zoom = zoom
 
     def zoom_in(self, factor: float = 1.2):
+        """Zoom in the view by the given factor."""
         self.zoom(factor)
 
     def zoom_out(self, factor: float = 1.2):
+        """Zoom out the view by the given factor."""
         self.zoom(1.0 / factor)
 
     def zoom_fit(self):
+        """Adjust the zoom level to fit the entire image in the view."""
         self.fitInView(self.image, Qt.AspectRatioMode.KeepAspectRatio)
         self._zoom = abs(
             self.transform().m11() or
@@ -89,6 +123,11 @@ class ImageView(QGraphicsView):
             self.transform().m21() or
             self.transform().m22()
         )
+
+    @property
+    def image(self) -> QGraphicsPixmapItem:
+        """The scene graphics item displaying the image."""
+        return self._image
 
     def mouseMoveEvent(self, event: QMouseEvent):
         scene_position: QPointF = self.mapToScene(event.position().toPoint())

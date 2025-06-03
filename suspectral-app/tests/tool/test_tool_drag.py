@@ -1,7 +1,7 @@
 import pytest
 from PySide6.QtWidgets import QGraphicsView
 
-from suspectral.tool.tool_drag import DragTool
+from suspectral.tool.tool_pan import PanTool
 from suspectral.view.image.image_view import ImageView
 
 
@@ -11,13 +11,14 @@ def image_view(qtbot):
     qtbot.addWidget(image_view)
     return image_view
 
+
 @pytest.fixture
 def set_drag_mode(mocker, image_view):
     return mocker.patch.object(image_view, "setDragMode")
 
 
 def test_drag_tool_activation(qtbot, image_view, set_drag_mode):
-    drag_tool = DragTool(image_view)
+    drag_tool = PanTool(image_view)
     drag_tool.activate()
 
     image_view.show()
@@ -27,7 +28,7 @@ def test_drag_tool_activation(qtbot, image_view, set_drag_mode):
 
 
 def test_drag_tool_deactivation(qtbot, image_view, set_drag_mode):
-    drag_tool = DragTool(image_view)
+    drag_tool = PanTool(image_view)
     drag_tool.deactivate()
 
     image_view.show()

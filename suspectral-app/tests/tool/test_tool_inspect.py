@@ -5,6 +5,7 @@ from PySide6.QtCore import Qt, QPoint, QEvent, QPointF
 from PySide6.QtGui import QMouseEvent, QAction, QPixmap, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsScene
 
+from suspectral.view.image.image_view import ImageView
 from suspectral.exporter.exporter import Exporter
 from suspectral.model.hypercube_container import HypercubeContainer
 from suspectral.tool.tool_inspect import InspectTool
@@ -12,7 +13,6 @@ from suspectral.tool.tool_inspect import InspectTool
 
 @pytest.fixture
 def image_view(qtbot):
-    from suspectral.view.image.image_view import ImageView
     view = ImageView()
     qtbot.addWidget(view)
     view.display(QPixmap(10, 10))
@@ -21,8 +21,8 @@ def image_view(qtbot):
 
 @pytest.fixture
 def container():
-    mock = create_autospec(HypercubeContainer)
-    mock.hypercube.name = "cube"
+    mock = MagicMock(spec=HypercubeContainer)
+    mock.hypercube._name = "cube"
     mock.hypercube.read_pixels.return_value = [[1, 2, 3]]
     mock.hypercube.bands = [400, 500, 600]
     return mock
@@ -30,7 +30,7 @@ def container():
 
 @pytest.fixture
 def exporter():
-    mock = create_autospec(Exporter)
+    mock = MagicMock(spec=Exporter)
     mock.label = "CSV"
     return mock
 

@@ -8,6 +8,22 @@ from suspectral.tool.tool import Tool
 
 
 class ZoomTool(Tool):
+    """
+    Tool for interactive zooming within the image view.
+
+    This tool modifies the cursor to a magnifier icon and enables the user to zoom
+    in or out by clicking on the image. Left-click zooms in, and right-click zooms out.
+    It also filters out context menu events and manages cursor visibility when entering
+    or leaving the image area.
+
+    Parameters
+    ----------
+    view : ImageView
+        The image view where zooming operations will be applied.
+    parent : QObject or None, optional
+        The parent object of the tool, by default None.
+    """
+
     def __init__(self, view: ImageView, parent: QObject | None = None):
         super().__init__(view, parent)
         self._cursor = QCursor(QPixmap(":/icons/magnifier-left.png"))

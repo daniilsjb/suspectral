@@ -7,7 +7,7 @@ from suspectral.controller.status_controller import StatusController
 from suspectral.model.hypercube import Hypercube
 from suspectral.tool.manager import ToolManager
 from suspectral.view.image.image_view import ImageView
-from suspectral.view.status_view import StatusView
+from suspectral.view.status.status_view import StatusView
 
 
 class DummyHypercube(QObject):
