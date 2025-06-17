@@ -50,7 +50,7 @@ To run the notebooks, simply follow these steps from the [suspectral-notebook](.
 1. `pip install -r requirements.txt`
 2. `jupyter notebook`
 
-You must download datasets from their respective authors and extract them in corresponding directories under [datasets](./suspectral-notebook/datasets):
+You must download datasets from their respective authors and extract them in corresponding [datasets](./suspectral-notebook/datasets) directories:
 
 - [ICVL](https://icvl.cs.bgu.ac.il/pages/researches/hyperspectral-imaging.html). Arad, B. and Ben-Shahar, O., 2016. Sparse recovery of hyperspectral signal from natural RGB images. In Computer Vision–ECCV 2016: 14th European Conference, Amsterdam, The Netherlands, October 11–14, 2016, Proceedings, Part VII 14 (pp. 19-34). Springer International Publishing.
 - [CAVE](https://cave.cs.columbia.edu/repository/Multispectral). Yasuma, F., Mitsunaga, T., Iso, D. and Nayar, S.K., 2010. Generalized assorted pixel camera: postcapture control of resolution, dynamic range, and spectrum. IEEE transactions on image processing, 19(9), pp.2241-2253.
