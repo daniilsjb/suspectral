@@ -25,7 +25,7 @@ from suspectral.controller.toolbar_controller import ToolbarController
 from suspectral.exporter.exporter import Exporter
 from suspectral.exporter.formatter_csv import CsvFormatter
 from suspectral.exporter.formatter_matlab import MatlabFormatter
-from suspectral.exporter.formatter_numpy import NpyFormatter
+from suspectral.exporter.formatter_numpy import NumpyFormatter
 from suspectral.exporter.writer_clipboard import ClipboardWriter
 from suspectral.exporter.writer_file import FileWriter
 from suspectral.help import HelpDialog
@@ -73,9 +73,9 @@ class Suspectral(QMainWindow):
                 formatter=MatlabFormatter(),
             ),
             Exporter(
-                label="NPy",
+                label="NumPy",
                 writer=FileWriter(suffix=".npy", filters="NumPy (*.npy)"),
-                formatter=NpyFormatter(),
+                formatter=NumpyFormatter(),
             ),
         ]
 

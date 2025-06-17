@@ -3,12 +3,12 @@ import io
 import numpy as np
 import pytest
 
-from suspectral.exporter.formatter_numpy import NpyFormatter
+from suspectral.exporter.formatter_numpy import NumpyFormatter
 
 
 @pytest.fixture
 def victim():
-    return NpyFormatter()
+    return NumpyFormatter()
 
 
 def test_npy_format_with_wavelengths(victim):

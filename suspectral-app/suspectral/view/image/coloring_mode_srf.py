@@ -87,7 +87,8 @@ class ColoringModeSRF(ColoringMode):
         self._contrast_checkbox.setText("Apply per-channel contrast")
         self._contrast_checkbox.setToolTip(
             "If enabled, each color channel of the synthesized RGB image will be separately\n"
-            "normalized by subtracting its minimum value and dividing by its maximum value.")
+            "normalized by subtracting its minimum value and dividing by its maximum value."
+        )
 
         self._points: list[QPoint] = []
         self._white_ref_select = SpectralReference(model, parent=self)

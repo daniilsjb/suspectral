@@ -26,21 +26,22 @@ class SynthesizerSRF(QObject):
 
     Parameters
     ----------
+    hypercube : Hypercube
+        The hyperspectral data cube to process.
     srf : np.ndarray
         A structured array containing the spectral response functions, with fields
         "Wavelength", "R", "G", and "B" corresponding to the red, green, and blue channels.
-    hypercube : Hypercube
-        The hyperspectral data cube to process.
-    apply_per_channel_contrast : bool, optional
-        Whether to normalize image contrast per channel after synthesis.
-    white_ref : np.ndarray, optional
-        A spectral reference used for white normalization.
-    black_ref : np.ndarray, optional
-        A spectral reference used for black normalization.
     spd : np.ndarray, optional
         A structured array with fields "Wavelength" and "Intensity" representing the
         spectral power distribution of the illuminant. If not provided, a flat spectrum
         (equal-energy, e.g., CIE E) is assumed.
+
+    white_ref : np.ndarray, optional
+        A spectral reference used for white normalization.
+    black_ref : np.ndarray, optional
+        A spectral reference used for black normalization.
+    apply_per_channel_contrast : bool, optional
+        Whether to normalize image contrast per channel after synthesis.
     """
 
     progress = Signal(int)
@@ -48,12 +49,12 @@ class SynthesizerSRF(QObject):
     finished = Signal()
 
     def __init__(self,
-                 srf: np.ndarray,
                  hypercube: Hypercube,
-                 apply_per_channel_contrast: bool = False,
+                 srf: np.ndarray,
+                 spd: np.ndarray | None = None,
                  white_ref: np.ndarray | None = None,
                  black_ref: np.ndarray | None = None,
-                 spd: np.ndarray | None = None):
+                 apply_per_channel_contrast: bool = False):
         super().__init__()
         self._running = True
         self._hypercube = hypercube
@@ -75,10 +76,8 @@ class SynthesizerSRF(QObject):
 
         # Align normalized SPD with the hypercube wavelengths.
         if spd is not None:
-            spd_wavelengths = spd["Wavelength"]
-            spd_intensities = spd["Intensity"]
-            self._spd = spd_intensities / spd_intensities.max()
-            self._spd = CubicSpline(spd_wavelengths, self._spd)(wavelengths)
+            self._spd = spd["Intensity"] / spd["Intensity"].max()
+            self._spd = CubicSpline(spd["Wavelength"], self._spd)(wavelengths)
         else:
             self._spd = 1.0  # Assume that CIE E is used by default.
 
@@ -112,7 +111,7 @@ class SynthesizerSRF(QObject):
 
             # Load the next row of spectra from the hypercube.
             spectra = self._hypercube.read_row(row)
-            spectra = spectra[:, :, self._mask]
+            spectra = spectra[:, :, self._mask].astype(np.float64)
 
             # Make the darkest pixels appear black (optional).
             if self._black_ref is not None:

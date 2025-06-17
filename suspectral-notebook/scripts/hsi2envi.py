@@ -12,7 +12,7 @@ root = Path(__file__).parent.parent
 
 
 def extract_icvl(name: str):
-    with h5py.File(root / 'datasets' / 'ICVL' / f'{name}.mat', 'r') as file:
+    with h5py.File(root / 'datasets' / 'ICVL-MATLAB' / f'{name}.mat', 'r') as file:
         hypercube = np.array(file['rad']).swapaxes(0, 2)
         wavelengths = np.squeeze(file['bands'])
 

@@ -5,7 +5,7 @@ import numpy as np
 from suspectral.exporter.formatter import Formatter
 
 
-class NpyFormatter(Formatter):
+class NumpyFormatter(Formatter):
     """Formatter that serializes spectral data into NumPy `.npy` format."""
 
     def format(self, spectra: np.ndarray, wavelengths: np.ndarray | None = None) -> bytes:

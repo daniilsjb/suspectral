@@ -153,7 +153,7 @@ class AreaTool(Tool):
 
     def _export_selection_points(self, exporter: Exporter):
         hypercube = self._container.hypercube
-        spectra = hypercube.read_pixels([(x, y) for y, x in itertools.product(self._sample_ys, self._sample_xs)])
+        spectra = hypercube.read_pixels([(row, col) for row, col in itertools.product(self._sample_ys, self._sample_xs)])
         exporter.export(hypercube.name, spectra, hypercube.wavelengths)
 
     def _start_selection(self, event: QMouseEvent):

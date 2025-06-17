@@ -62,7 +62,7 @@ class ToolbarView(QToolBar):
         )
         self._add_tool(
             name="Pan",
-            icon="drag.svg",
+            icon="pan.svg",
             tool=self._tools.pan,
         )
         self._add_tool(

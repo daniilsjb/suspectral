@@ -17,7 +17,7 @@
         <file>icons/dark/copy.svg</file>
         <file>icons/dark/cursor.svg</file>
         <file>icons/dark/database.svg</file>
-        <file>icons/dark/drag.svg</file>
+        <file>icons/dark/pan.svg</file>
         <file>icons/dark/exit.svg</file>
         <file>icons/dark/flip-horizontal.svg</file>
         <file>icons/dark/flip-vertical.svg</file>
@@ -39,7 +39,7 @@
         <file>icons/light/copy.svg</file>
         <file>icons/light/cursor.svg</file>
         <file>icons/light/database.svg</file>
-        <file>icons/light/drag.svg</file>
+        <file>icons/light/pan.svg</file>
         <file>icons/light/exit.svg</file>
         <file>icons/light/flip-horizontal.svg</file>
         <file>icons/light/flip-vertical.svg</file>

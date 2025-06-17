@@ -44,7 +44,7 @@ def test_cie_default(qtbot, hypercube, cmf):
         victim.run()
 
     image = blocker.args[0]
-    assert md5(image) == "b9a5aeb8cce687e71fb89215c80bcf22"
+    assert md5(image) == "d839563a506951c0093682d895c6b43c"
 
 
 def test_cie_srgb(qtbot, hypercube, cmf):
@@ -58,7 +58,7 @@ def test_cie_srgb(qtbot, hypercube, cmf):
         victim.run()
 
     image = blocker.args[0]
-    assert md5(image) == "b792551383a50a961efa2c653f08ee8b"
+    assert md5(image) == "eb0c29ecb76e5db7b524157866441cf6"
 
 
 def test_cie_srgb_contrast(qtbot, hypercube, cmf):
@@ -73,7 +73,7 @@ def test_cie_srgb_contrast(qtbot, hypercube, cmf):
         victim.run()
 
     image = blocker.args[0]
-    assert md5(image) == "da3e14815baab4558845aca9b974816d"
+    assert md5(image) == "fdf27800920e58fad4ccfca799bf4f63"
 
 
 def test_cie_srgb_d65(qtbot, hypercube, cmf, d65):
@@ -88,7 +88,7 @@ def test_cie_srgb_d65(qtbot, hypercube, cmf, d65):
         victim.run()
 
     image = blocker.args[0]
-    assert md5(image) == "21794c38b835e1523c6382fa7b9c201a"
+    assert md5(image) == "623e19f179e6e26aefbad6ee61ba5650"
 
 
 def test_cie_srgb_white_d65(qtbot, hypercube, cmf, d65):
@@ -106,7 +106,7 @@ def test_cie_srgb_white_d65(qtbot, hypercube, cmf, d65):
         victim.run()
 
     image = blocker.args[0]
-    assert md5(image) == "2ce54bb1b2ca3c71cb0ed5877ed31653"
+    assert md5(image) == "fb1a978cf5bb5fee028d44ef5e01afb6"
 
 
 def test_cie_srgb_white_black_d65(qtbot, hypercube, cmf, d65):
@@ -126,7 +126,7 @@ def test_cie_srgb_white_black_d65(qtbot, hypercube, cmf, d65):
         victim.run()
 
     image = blocker.args[0]
-    assert md5(image) == "b34a80dd27acd0f74e1d3e11ed1cc7c9"
+    assert md5(image) == "9f5139c2fcb3b2a0d6c01bc7a5a57062"
 
 
 def test_cie_stopped(qtbot, hypercube, cmf):

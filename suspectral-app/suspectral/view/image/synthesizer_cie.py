@@ -28,25 +28,25 @@ class SynthesizerCIE(QObject):
 
     Parameters
     ----------
+    hypercube : Hypercube
+        The hyperspectral data cube to process.
     cmf : np.ndarray
         A structured array containing columns "Wavelength", "X", "Y", and "Z" for the
         color matching functions (typically from CIE 1931).
-    hypercube : Hypercube
-        The hyperspectral data cube to process.
+    spd : np.ndarray, optional
+        A structured array with columns "Wavelength" and "Intensity" representing the
+        spectral power distribution of the illuminant (e.g., D65). If not provided, a
+        flat (equal energy) SPD is assumed.
+    white_ref : np.ndarray, optional
+        A spectral reference used for white normalization.
+    black_ref : np.ndarray, optional
+        A spectral reference used for black normalization.
     apply_srgb_transform : bool, optional
         Whether to convert XYZ to sRGB using the standard transformation matrix.
     apply_gamma_encoding : bool, optional
         Whether to apply sRGB gamma encoding after sRGB conversion.
     apply_per_channel_contrast : bool, optional
         Whether to normalize contrast individually per channel.
-    white_ref : np.ndarray, optional
-        A spectral reference used for white normalization.
-    black_ref : np.ndarray, optional
-        A spectral reference used for black normalization.
-    spd : np.ndarray, optional
-        A structured array with columns "Wavelength" and "Intensity" representing the
-        spectral power distribution of the illuminant (e.g., D65). If not provided, a
-        flat (equal energy) SPD is assumed.
     """
 
     progress = Signal(int)
@@ -54,14 +54,14 @@ class SynthesizerCIE(QObject):
     finished = Signal()
 
     def __init__(self,
-                 cmf: np.ndarray,
                  hypercube: Hypercube,
-                 apply_srgb_transform: bool = False,
-                 apply_gamma_encoding: bool = False,
-                 apply_per_channel_contrast: bool = False,
+                 cmf: np.ndarray,
+                 spd: np.ndarray | None = None,
                  white_ref: np.ndarray | None = None,
                  black_ref: np.ndarray | None = None,
-                 spd: np.ndarray | None = None):
+                 apply_srgb_transform: bool = False,
+                 apply_gamma_encoding: bool = False,
+                 apply_per_channel_contrast: bool = False):
         super().__init__()
         self._running = True
         self._hypercube = hypercube
@@ -85,10 +85,8 @@ class SynthesizerCIE(QObject):
 
         # Align normalized SPD with the hypercube wavelengths.
         if spd is not None:
-            spd_wavelengths = spd["Wavelength"]
-            spd_intensities = spd["Intensity"]
-            self._spd = spd_intensities / spd_intensities.max()
-            self._spd = CubicSpline(spd_wavelengths, self._spd)(wavelengths)
+            self._spd = spd["Intensity"] / spd["Intensity"].max()
+            self._spd = CubicSpline(spd["Wavelength"], self._spd)(wavelengths)
         else:
             self._spd = 1.0  # Assume that CIE E is used by default.
 
@@ -140,16 +138,13 @@ class SynthesizerCIE(QObject):
             image[row, :, 2] = simpson(spectra * self._cmf_z * self._spd, w)
             self.progress.emit(int(row / (num_rows - 1) * 100))
         else:
+            # Apply the standard XYZ to sRGB transformation matrix.
             if self._apply_srgb_transform:
-                # Apply the standard XYZ to sRGB transformation matrix.
-                image = image.reshape(-1, 3).T
-                image = np.array([
+                image = (np.array([
                     [+3.2404542, -1.5371385, -0.4985314],
                     [-0.9692660, +1.8760108, +0.0415560],
                     [+0.0556434, -0.2040259, +1.0572252],
-                ]) @ image
-
-                image = image.T.reshape((num_rows, num_cols, 3))
+                ]) @ image.reshape(-1, 3).T).T.reshape((num_rows, num_cols, 3))
 
             # Apply contrast (either per-channel or globally).
             if self._apply_per_channel_contrast:
