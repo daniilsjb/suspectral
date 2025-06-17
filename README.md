@@ -40,7 +40,7 @@ The software can be packaged into a Windows executable using [PyInstaller](https
 
 1. `pyinstaller app.spec`
 
-To create an installation wizard via [Inno Setup](https://jrsoftware.org/isinfo.php), use the provided [compilation script](./suspectral-app/installer/Windows.iss).
+To create an installation wizard via [Inno Setup](https://jrsoftware.org/isinfo.php), use the provided [compilation script](./suspectral-app/app.iss).
 
 ### suspectral-notebook
 
